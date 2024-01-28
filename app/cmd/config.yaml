@@ -1,0 +1,4 @@
+# config.yaml
+
+bot_config:
+    mod: "debug"
