@@ -23,7 +23,7 @@ CREATE TABLE employees (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     surname VARCHAR(100) DEFAULT NULL,
-    telegram_tag VARCHAR(100) NOT NULL UNIQUE,
+    telegram_id BIGINT NOT NULL UNIQUE,
     occupation_id BIGINT REFERENCES occupations(id)
 );
 

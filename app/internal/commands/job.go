@@ -1,0 +1,55 @@
+package commands
+
+import (
+	"context"
+	container "telegrambot_new_emploee/internal/di-container"
+	"telegrambot_new_emploee/internal/models"
+	"telegrambot_new_emploee/internal/updates"
+)
+
+type Job struct {
+	Ctx       context.Context
+	Command   *models.Command
+	Update    *models.Update
+	User      *models.User
+	Queue     updates.Queue
+	Container *container.DiContainer
+}
+
+func NewJob(
+	ctx context.Context,
+	queue updates.Queue,
+	update *models.Update,
+	user *models.User,
+	container *container.DiContainer,
+) (*Job, bool) {
+	job := &Job{
+		Ctx:       ctx,
+		Update:    update,
+		User:      user,
+		Queue:     queue,
+		Container: container,
+	}
+
+	if ok := job.getCommand(); !ok {
+		return nil, false
+	}
+
+	return job, true
+}
+
+func (j *Job) getCommand() bool {
+	command, err := j.Container.CmdRepo().GetCommand(j.Ctx, j.Update.Message)
+	if err != nil {
+		// TODO logging
+		return false
+	}
+
+	j.Command = command
+
+	return true
+}
+
+type Cmd interface {
+	Execute(ctx context.Context, job *Job) error
+}

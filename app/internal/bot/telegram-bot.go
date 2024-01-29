@@ -3,6 +3,7 @@ package bot
 import (
 	"context"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"telegrambot_new_emploee/internal/models"
 )
 
 type telegramBot struct {
@@ -19,8 +20,8 @@ func NewTelegramBot(token string) (Bot, error) {
 	}, nil
 }
 
-func (b *telegramBot) Start(ctx context.Context) <-chan *Update {
-	updates := make(chan *Update)
+func (b *telegramBot) Start(ctx context.Context) <-chan *models.Update {
+	updates := make(chan *models.Update)
 
 	// Retrieve all updates and convert them to standard format.
 	go func() {
@@ -43,21 +44,19 @@ func (b *telegramBot) Start(ctx context.Context) <-chan *Update {
 	return updates
 }
 
-func telegramToUpdate(update *tgbotapi.Update) *Update {
+func telegramToUpdate(update *tgbotapi.Update) *models.Update {
 	if update.Message == nil {
 		return nil
 	}
 
-	return &Update{
-		User: &User{
-			ChatId: update.Message.Chat.ID,
-			Tag:    update.Message.From.UserName,
-		},
-		Message: update.Message.Text,
+	return &models.Update{
+		UpdateUserId: update.Message.From.ID,
+		ChatId:       update.Message.Chat.ID,
+		Message:      update.Message.Text,
 	}
 }
 
-func (b *telegramBot) SendMessage(ctx context.Context, message Message) error {
+func (b *telegramBot) SendMessage(ctx context.Context, message models.Message) error {
 	msg := tgbotapi.NewMessage(message.ChatId, message.Message)
 	_, err := b.bot.Send(msg)
 	if err != nil {
@@ -67,7 +66,7 @@ func (b *telegramBot) SendMessage(ctx context.Context, message Message) error {
 	return nil
 }
 
-func (b *telegramBot) SendButtons(ctx context.Context, buttons Buttons) error {
+func (b *telegramBot) SendButtons(ctx context.Context, buttons models.Buttons) error {
 	var keywordButtons [][]tgbotapi.KeyboardButton
 	for _, button := range buttons.Buttons {
 		keywordButtons = append(keywordButtons,

@@ -4,7 +4,7 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/joho/godotenv"
 	"log"
-	"telegrambot_new_emploee/internal/app"
+	"telegrambot_new_emploee/internal/api"
 )
 
 const (
@@ -23,5 +23,5 @@ func main() {
 		log.Fatal(err)
 	}
 
-	app.Run()
+	api.Run()
 }
