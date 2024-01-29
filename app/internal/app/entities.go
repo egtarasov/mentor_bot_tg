@@ -32,6 +32,24 @@ type Command struct {
 	Action Action
 }
 
+type Todo struct {
+	Id         int64
+	Label      string
+	Priority   int
+	EmployeeId int64
+	Completed  bool
+}
+
+func ToTodo(todo *database.Todo) *Todo {
+	return &Todo{
+		Id:         todo.Id,
+		Label:      todo.Label,
+		Priority:   todo.Priority,
+		EmployeeId: todo.EmployeeId,
+		Completed:  todo.Completed,
+	}
+}
+
 func ToUpdate(update *bot.Update) *Update {
 	return &Update{
 		UserTag: update.User.Tag,

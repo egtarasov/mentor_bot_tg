@@ -73,10 +73,21 @@ func newApp() (*app, error) {
 }
 
 func addCommands(app *app) {
-	app.getCmd = &getMaterialCmd{app: app}
-	app.subDirCmd = &subDirCmd{app: app}
+	app.getCmd = NewGetDataCmd(app)
+	app.subDirCmd = NewSubDirCmd(app)
 
+	// All complex commands must be registered there. Note, that the name in database and name in map must be the same,
+	// otherwise the command will node function.
 	app.complexCmd = make(map[string]Cmd)
+	complexCmd := []struct {
+		key string
+		cmd Cmd
+	}{
+		{key: "Показать чек-лист", cmd: NewShowTodoListCmd(app)},
+	}
+	for _, node := range complexCmd {
+		app.complexCmd[node.key] = node.cmd
+	}
 }
 
 func Run() {

@@ -1,5 +1,8 @@
 package app
 
+// This file contains all the commands, which are available for a bot. The commands are responsible for processing
+// the data
+
 import (
 	"context"
 	"telegrambot_new_emploee/internal/bot"
@@ -61,5 +64,19 @@ func (c *subDirCmd) Execute(ctx context.Context, job *job) error {
 }
 
 func (c *showTodoListCmd) Execute(ctx context.Context, job *job) error {
-	return nil
+	todos := c.app.taskRepo.GetTodoList(ctx, job.queue.user.UserId)
+	uncompletedTodos := make([]Todo, 0, len(todos))
+	for _, todo := range todos {
+		if todo.Completed {
+			continue
+		}
+		uncompletedTodos = append(uncompletedTodos, *ToTodo(&todo))
+	}
+
+	msg := todoMessage(uncompletedTodos)
+
+	return c.app.bot.SendMessage(ctx, bot.Message{
+		Message: msg,
+		ChatId:  job.update.ChatId,
+	})
 }

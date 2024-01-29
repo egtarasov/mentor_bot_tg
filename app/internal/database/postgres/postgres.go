@@ -34,22 +34,6 @@ func (a *userPostgres) GetUserByTag(ctx context.Context, tag string) (*database.
 	return &user, nil
 }
 
-func (a *userPostgres) GetSession(ctx context.Context, userId int64) (*database.Session, error) {
-	var session database.Session
-	query := "select s.id, user_id, state from sessions s join states st on s.state_id = st.id"
-
-	err := pgxscan.Get(ctx, a.pool, &session, query, userId)
-	if errors.Is(err, pgx.ErrNoRows) {
-		// We guarantee on code layer that there is no such case that user exists and session is not.
-		return nil, database.ErrNoUser
-	}
-	if err != nil {
-		return nil, err
-	}
-
-	return &session, nil
-}
-
 type commandPostgres struct {
 	pool *pgxpool.Pool
 }
@@ -121,6 +105,21 @@ func NewTasksRepo(pool *pgxpool.Pool) database.TasksRepo {
 func (t *tasksPostgres) GetTasks(ctx context.Context, employeeId int64) []database.Task {
 	var tasks []database.Task
 	query := `select id, name, description, story_points, completed, employee_id from tasks where employee_id = $1`
+
+	err := pgxscan.Select(ctx, t.pool, &tasks, query, employeeId)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return nil
+	}
+	if err != nil {
+		return nil
+	}
+
+	return tasks
+}
+
+func (t *tasksPostgres) GetTodoList(ctx context.Context, employeeId int64) []database.Todo {
+	var tasks []database.Todo
+	query := `select id, label, priority, employee_id, completed from todo_list where employee_id = $1`
 
 	err := pgxscan.Select(ctx, t.pool, &tasks, query, employeeId)
 	if errors.Is(err, pgx.ErrNoRows) {

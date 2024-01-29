@@ -11,6 +11,15 @@ type Task struct {
 	EmployeeId  int64  `db:"employee_id"`
 }
 
+type Todo struct {
+	Id         int64  `db:"id"`
+	Label      string `db:"label"`
+	Priority   int    `db:"priority"`
+	EmployeeId int64  `db:"employee_id"`
+	Completed  bool   `db:"completed"`
+}
+
 type TasksRepo interface {
 	GetTasks(ctx context.Context, employeeId int64) []Task
+	GetTodoList(ctx context.Context, employeeId int64) []Todo
 }
