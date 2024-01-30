@@ -21,21 +21,23 @@ type DiContainer struct {
 	pool *pgxpool.Pool
 }
 
-func NewDiContainer(ctx context.Context, cfg *config.Config) error {
-	pool, err := pgxpool.New(ctx, cfg.ConnStr)
+func NewDiContainer(ctx context.Context) error {
+	pool, err := pgxpool.New(ctx, config.Cfg.ConnStr)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	tgBot, err := bot.NewTelegramBot(cfg.TgToken)
+	tgBot, err := bot.NewTelegramBot(config.Cfg.TgToken)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return &DiContainer{
+	Container = &DiContainer{
 		bot:  tgBot,
 		pool: pool,
-	}, nil
+	}
+
+	return nil
 }
 
 func (c *DiContainer) Bot() bot.Bot {

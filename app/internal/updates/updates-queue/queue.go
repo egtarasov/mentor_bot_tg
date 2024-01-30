@@ -1,4 +1,4 @@
-package updates
+package updates_queue
 
 import (
 	"fmt"
@@ -8,23 +8,27 @@ import (
 )
 
 type updatesQueue struct {
-	lock sync.Mutex
-
-	user *models.User
-
+	lock    sync.Mutex
 	waiting bool
 	sync    chan *models.Update
 	updates []*models.Update
 }
 
-func NewQueue(user *models.User) updates.Queue {
+func NewQueue() updates.Queue {
 	return &updatesQueue{
 		lock:    sync.Mutex{},
-		user:    user,
 		waiting: false,
 		sync:    make(chan *models.Update),
 		updates: make([]*models.Update, 0, 1),
 	}
+}
+
+func (q *updatesQueue) Lock() {
+	q.lock.Lock()
+}
+
+func (q *updatesQueue) Unlock() {
+	q.lock.Unlock()
 }
 
 // AddUpdate adds an update to the queue.
@@ -49,6 +53,10 @@ func (q *updatesQueue) GetUpdate() *models.Update {
 	defer q.lock.Unlock()
 	update := q.getUpdate()
 	return update
+}
+
+func (q *updatesQueue) Size() int {
+	return len(q.updates)
 }
 
 func (q *updatesQueue) WaitForUpdate() *models.Update {

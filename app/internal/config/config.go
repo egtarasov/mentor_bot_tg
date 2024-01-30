@@ -5,6 +5,8 @@ import (
 	"os"
 )
 
+var Cfg *Config
+
 const (
 	tgToken = "TELEGRAM_TOKEN"
 )
@@ -24,11 +26,12 @@ func connString() string {
 		os.Getenv("POSTGRES_SSLMODE"))
 }
 
-func NewConfig() (*Config, error) {
+func NewConfig() error {
 	val := os.Getenv("TELEGRAM_TOKEN")
 	_ = val
-	return &Config{
+	Cfg = &Config{
 		ConnStr: connString(),
 		TgToken: os.Getenv(tgToken),
-	}, nil
+	}
+	return nil
 }

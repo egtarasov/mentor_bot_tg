@@ -2,13 +2,14 @@ package models
 
 type Update struct {
 	UpdateUserId int64
+	User         *User
 	ChatId       int64
 	Message      string
 }
 
 type User struct {
 	UserId       int64
-	Tag          string
+	TelegramId   int64
 	Name         string
 	OccupationId int64
 }

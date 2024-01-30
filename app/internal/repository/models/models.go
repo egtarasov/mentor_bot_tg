@@ -34,6 +34,6 @@ type User struct {
 	Id           int64  `db:"id"`
 	Name         string `db:"name"`
 	Surname      string `db:"surname"`
-	TelegramTag  string `db:"telegram_tag"`
+	TelegramId   int64  `db:"telegram_id"`
 	OccupationId int64  `db:"occupation_id"`
 }

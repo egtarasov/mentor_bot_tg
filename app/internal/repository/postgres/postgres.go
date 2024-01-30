@@ -24,7 +24,7 @@ func NewUserPostgres(pool *pgxpool.Pool) repository.UserRepo {
 
 func (a *userPostgres) GetUserByTag(ctx context.Context, tag int64) (*models.User, error) {
 	var user repoModels.User
-	query := "select id, name, surname, telegram_tag, occupation_id from employees where telegram_id = $1"
+	query := "select id, name, surname, telegram_id, occupation_id from employees where telegram_id = $1"
 
 	err := pgxscan.Get(ctx, a.pool, &user, query, tag)
 	if errors.Is(err, pgx.ErrNoRows) {

@@ -5,13 +5,13 @@ import (
 	"errors"
 	"log"
 	"sync"
-	"telegrambot_new_emploee/internal/bot"
 	"telegrambot_new_emploee/internal/commands"
 	"telegrambot_new_emploee/internal/config"
 	container "telegrambot_new_emploee/internal/di-container"
 	"telegrambot_new_emploee/internal/models"
 	"telegrambot_new_emploee/internal/repository"
 	"telegrambot_new_emploee/internal/updates"
+	updatesqueue "telegrambot_new_emploee/internal/updates/updates-queue"
 )
 
 type app struct {
@@ -19,10 +19,7 @@ type app struct {
 	wgUpdates sync.WaitGroup
 
 	// Store the queues of updates for each user. The lock is used to safely delete and add queues.
-	usersLock sync.Mutex
-	users     map[int64]*updates.Queue
-
-	container *container.DiContainer
+	users updates.Map
 
 	// Commands available for a bot.
 	getCmd     commands.Cmd
@@ -33,12 +30,12 @@ type app struct {
 func newApp() (*app, error) {
 	ctx := context.Background()
 
-	cfg, err := config.NewConfig()
+	err := config.NewConfig()
 	if err != nil {
 		return nil, err
 	}
 
-	ct, err := container.NewDiContainer(ctx, cfg)
+	err = container.NewDiContainer(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -47,10 +44,7 @@ func newApp() (*app, error) {
 		ctx:       ctx,
 		wgUpdates: sync.WaitGroup{},
 
-		usersLock: sync.Mutex{},
-		users:     make(map[int64]*updates.Queue),
-
-		container: ct,
+		users: updatesqueue.NewMap(),
 
 		getCmd:     nil,
 		subDirCmd:  nil,
@@ -59,8 +53,8 @@ func newApp() (*app, error) {
 }
 
 func addCommands(app *app) {
-	app.getCmd = commands.NewGetDataCmd(app.container)
-	app.subDirCmd = commands.NewSubDirCmd(app.container)
+	app.getCmd = commands.NewGetDataCmd()
+	app.subDirCmd = commands.NewSubDirCmd()
 
 	// All complex commands must be registered there. Note, that the name in database and name in map must be the same,
 	// otherwise the command will node function.
@@ -69,7 +63,7 @@ func addCommands(app *app) {
 		key string
 		cmd commands.Cmd
 	}{
-		{key: "Показать чек-лист", cmd: commands.NewShowTodoListCmd(app.container)},
+		{key: "Показать чек-лист", cmd: commands.NewShowTodoListCmd()},
 	}
 	for _, node := range complexCmd {
 		app.complexCmd[node.key] = node.cmd
@@ -87,7 +81,7 @@ func Run() {
 }
 
 func (a *app) run() {
-	updatesCh := a.container.Bot().Start(a.ctx)
+	updatesCh := container.Container.Bot().Start(a.ctx)
 
 	// Process updates from the bot.
 	for update := range updatesCh {
@@ -108,40 +102,28 @@ func (a *app) processUpdate(update *models.Update) {
 		return
 	}
 
-	// Get the current state of the user.
-	a.usersLock.Lock()
-	defer a.usersLock.Unlock()
-	queue, ok := a.users[user.UserId]
-	if !ok {
-		// Create a new update's queue and start the processing goroutine.
-		queue := updates.newQueue(user)
-		// There is no need for synchronization because only this goroutine has access to the queue.
-		queue.AddUpdate(update)
-		a.users[user.UserId] = queue
-		go a.processQueue(queue)
-		return
-	}
-
-	// Just add a new update to the queue and signal if any goroutine is waiting for a new update.
+	// Get or create a queue for a user and put update into it.
+	queue, ok := a.users.GetOrCreate(user.UserId)
 	queue.AddUpdate(update)
+	// If the queue did not exist, we need to start processing goroutine.
+	if !ok {
+		go a.processQueue(queue, user)
+	}
 }
 
-// processQueue process the queue of updates for a given user. If the queue becomes empty,
-// it will be removed and the processing ceased.
-func (a *app) processQueue(queue *updates.updatesQueue) {
+func (a *app) processQueue(queue updates.Queue, user *models.User) {
 	for {
-		update := a.getUpdate(queue)
+		update := a.users.GetUpdate(user.UserId, queue)
 		if update == nil {
 			return
 		}
 
-		job, ok := a.newJob(queue, update)
+		job, ok := commands.NewJob(a.ctx, queue, update, user)
 		// TODO a better response to the unknown command.
 		if !ok {
-			_ = a.bot.SendMessage(a.ctx, bot.Message{
-				Message: "Unknown command",
-				ChatId:  update.ChatId,
-			})
+			_ = container.Container.Bot().SendMessage(
+				a.ctx, models.NewMessage(
+					"Unknown command", update.ChatId))
 			continue
 		}
 
@@ -150,55 +132,19 @@ func (a *app) processQueue(queue *updates.updatesQueue) {
 	}
 }
 
-// getUpdate gets an update concurrently from the queue. If there is no updates to obtain the queue will be removed
-// from the application's users map.
-func (a *app) getUpdate(queue *updates.updatesQueue) *Update {
-	// The lock is to safely delete a queue from the map (if a new update will come, and we will try to delete a map).
-	a.usersLock.Lock()
-	queue.lock.Lock()
-	defer a.usersLock.Unlock()
-	defer queue.lock.Unlock()
-
-	// Remove the queue if there is no more updates to process.
-	if len(queue.updates) == 0 {
-		delete(a.users, queue.user.UserId)
-		return nil
-	}
-
-	update := queue.updates[0]
-	queue.updates = queue.updates[1:]
-
-	return update
-}
-
-// newJob create a new job from the update.
-func (a *app) newJob(queue *updates.updatesQueue, update *Update) (*job, bool) {
-	job := &job{
-		command: nil,
-		update:  update,
-		queue:   queue,
-	}
-
-	if ok := a.getCommand(job); !ok {
-		return nil, false
-	}
-
-	return job, true
-}
-
 // processJob process a job based on the job's command.
-func (a *app) processJob(job *job) {
+func (a *app) processJob(job *commands.Job) {
 	defer a.wgUpdates.Done()
 
 	var cmd commands.Cmd
 
-	switch job.command.Action {
-	case GetDataCmd:
+	switch job.Command.Action {
+	case models.GetDataCmd:
 		cmd = a.getCmd
-	case GetSubsectionsCmd:
+	case models.GetSubsectionsCmd:
 		cmd = a.subDirCmd
-	case ComplexCmd:
-		cmd = a.complexCmd[job.command.Name]
+	case models.ComplexCmd:
+		cmd = a.complexCmd[job.Command.Name]
 	default:
 		// TODO log unknown command type
 		return
@@ -210,22 +156,9 @@ func (a *app) processJob(job *job) {
 	}
 }
 
-// getCommand gets a command for a given job. Returns true if command is determined, false otherwise.
-func (a *app) getCommand(job *job) bool {
-	command, err := a.container.CmdRepo().GetCommand(a.ctx, job.update.Message)
-	if err != nil {
-		// TODO logging
-		return false
-	}
-
-	job.command = ToCommand(command)
-
-	return true
-}
-
 // authenticate gets a user for a given update.
 func (a *app) authenticate(update *models.Update) *models.User {
-	user, err := a.container.UserRepo().GetUserByTag(a.ctx, update.UpdateUserId)
+	user, err := container.Container.UserRepo().GetUserByTag(a.ctx, update.UpdateUserId)
 	if errors.Is(err, repository.ErrNoUser) {
 		return nil
 	}
@@ -233,5 +166,7 @@ func (a *app) authenticate(update *models.Update) *models.User {
 		// TODO processJob an unexpected error
 		return nil
 	}
-	return ToUser(user)
+
+	update.User = user
+	return user
 }

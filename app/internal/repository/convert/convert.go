@@ -38,7 +38,7 @@ func ToTodoFromRepo(todo *repoModels.Todo) *models.Todo {
 func ToUserFromRepo(user *repoModels.User) *models.User {
 	return &models.User{
 		UserId:       user.Id,
-		Tag:          user.TelegramTag,
+		TelegramId:   user.TelegramId,
 		Name:         user.Name,
 		OccupationId: user.OccupationId,
 	}

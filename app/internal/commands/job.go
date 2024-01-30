@@ -8,12 +8,11 @@ import (
 )
 
 type Job struct {
-	Ctx       context.Context
-	Command   *models.Command
-	Update    *models.Update
-	User      *models.User
-	Queue     updates.Queue
-	Container *container.DiContainer
+	Ctx     context.Context
+	Command *models.Command
+	Update  *models.Update
+	User    *models.User
+	Queue   updates.Queue
 }
 
 func NewJob(
@@ -21,14 +20,12 @@ func NewJob(
 	queue updates.Queue,
 	update *models.Update,
 	user *models.User,
-	container *container.DiContainer,
 ) (*Job, bool) {
 	job := &Job{
-		Ctx:       ctx,
-		Update:    update,
-		User:      user,
-		Queue:     queue,
-		Container: container,
+		Ctx:    ctx,
+		Update: update,
+		User:   user,
+		Queue:  queue,
 	}
 
 	if ok := job.getCommand(); !ok {
@@ -39,7 +36,7 @@ func NewJob(
 }
 
 func (j *Job) getCommand() bool {
-	command, err := j.Container.CmdRepo().GetCommand(j.Ctx, j.Update.Message)
+	command, err := container.Container.CmdRepo().GetCommand(j.Ctx, j.Update.Message)
 	if err != nil {
 		// TODO logging
 		return false
