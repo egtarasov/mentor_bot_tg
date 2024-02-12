@@ -8,7 +8,7 @@ type Update struct {
 }
 
 type User struct {
-	UserId       int64
+	Id           int64
 	TelegramId   int64
 	Name         string
 	OccupationId int64
@@ -63,6 +63,20 @@ type Buttons struct {
 	ChatId  int64
 	Buttons []Button
 	Message string
+}
+
+type Track string
+
+const (
+	DefaultTrack Track = "default"
+)
+
+type Goal struct {
+	Id          int64
+	Name        string
+	Description string
+	EmployeeId  int64
+	Track       Track
 }
 
 func NewMessage(msg string, chatID int64) Message {

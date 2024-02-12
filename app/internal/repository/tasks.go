@@ -6,6 +6,8 @@ import (
 )
 
 type TasksRepo interface {
-	GetTasks(ctx context.Context, employeeId int64) []models.Task
-	GetTodoList(ctx context.Context, employeeId int64) []models.Todo
+	GetTasksById(ctx context.Context, employeeId int64) ([]models.Task, error)
+	GetTodoListById(ctx context.Context, employeeId int64) ([]models.Todo, error)
+	CheckTodo(ctx context.Context, todoId *models.Todo) error
+	GetGoalsById(ctx context.Context, employeeId int64) ([]models.Goal, error)
 }

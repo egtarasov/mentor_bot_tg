@@ -37,7 +37,7 @@ func ToTodoFromRepo(todo *repoModels.Todo) *models.Todo {
 
 func ToUserFromRepo(user *repoModels.User) *models.User {
 	return &models.User{
-		UserId:       user.Id,
+		Id:           user.Id,
 		TelegramId:   user.TelegramId,
 		Name:         user.Name,
 		OccupationId: user.OccupationId,
@@ -49,6 +49,16 @@ func ToMaterialFromRepo(material *repoModels.Material) *models.Material {
 		Id:        material.Id,
 		Message:   material.Message,
 		CommandId: material.CommandId,
+	}
+}
+
+func ToGoalFromRepo(goal *repoModels.Goal) *models.Goal {
+	return &models.Goal{
+		Id:          goal.Id,
+		Name:        goal.Name,
+		Description: goal.Description,
+		EmployeeId:  goal.EmployeeId,
+		Track:       models.Track(goal.Track),
 	}
 }
 

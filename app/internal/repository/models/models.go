@@ -37,3 +37,11 @@ type User struct {
 	TelegramId   int64  `db:"telegram_id"`
 	OccupationId int64  `db:"occupation_id"`
 }
+
+type Goal struct {
+	Id          int64  `db:"id"`
+	Name        string `db:"name"`
+	Description string `db:"description"`
+	EmployeeId  int64  `db:"employee_id"`
+	Track       string `db:"track"`
+}

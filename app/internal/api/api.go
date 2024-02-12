@@ -64,7 +64,10 @@ func addCommands(app *app) {
 		cmd commands.Cmd
 	}{
 		{key: "Показать чек-лист", cmd: commands.NewShowTodoListCmd()},
+		{key: "Отметить задачу в чек-листе", cmd: commands.NewCheckTodoCmd()},
+		{key: "Цели", cmd: commands.NewShowGoalCmd()},
 	}
+
 	for _, node := range complexCmd {
 		app.complexCmd[node.key] = node.cmd
 	}
@@ -103,7 +106,7 @@ func (a *app) processUpdate(update *models.Update) {
 	}
 
 	// Get or create a queue for a user and put update into it.
-	queue, ok := a.users.GetOrCreate(user.UserId)
+	queue, ok := a.users.GetOrCreate(user.Id)
 	queue.AddUpdate(update)
 	// If the queue did not exist, we need to start processing goroutine.
 	if !ok {
@@ -113,7 +116,7 @@ func (a *app) processUpdate(update *models.Update) {
 
 func (a *app) processQueue(queue updates.Queue, user *models.User) {
 	for {
-		update := a.users.GetUpdate(user.UserId, queue)
+		update := a.users.GetUpdate(user.Id, queue)
 		if update == nil {
 			return
 		}

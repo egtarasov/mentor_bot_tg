@@ -105,32 +105,56 @@ func NewTasksRepo(pool *pgxpool.Pool) repository.TasksRepo {
 	}
 }
 
-func (t *tasksPostgres) GetTasks(ctx context.Context, employeeId int64) []models.Task {
+func (t *tasksPostgres) GetTasksById(ctx context.Context, employeeId int64) ([]models.Task, error) {
 	var tasks []repoModels.Task
 	query := `select id, name, description, story_points, completed, employee_id from tasks where employee_id = $1`
 
 	err := pgxscan.Select(ctx, t.pool, &tasks, query, employeeId)
 	if errors.Is(err, pgx.ErrNoRows) {
-		return nil
+		return nil, nil
 	}
 	if err != nil {
-		return nil
+		return nil, err
 	}
 
-	return convert.ToArray(tasks, convert.ToTaskFromRepo)
+	return convert.ToArray(tasks, convert.ToTaskFromRepo), nil
 }
 
-func (t *tasksPostgres) GetTodoList(ctx context.Context, employeeId int64) []models.Todo {
+func (t *tasksPostgres) GetTodoListById(ctx context.Context, employeeId int64) ([]models.Todo, error) {
 	var todos []repoModels.Todo
 	query := `select id, label, priority, employee_id, completed from todo_list where employee_id = $1`
 
 	err := pgxscan.Select(ctx, t.pool, &todos, query, employeeId)
 	if errors.Is(err, pgx.ErrNoRows) {
-		return nil
+		return nil, nil
 	}
 	if err != nil {
-		return nil
+		return nil, err
 	}
 
-	return convert.ToArray(todos, convert.ToTodoFromRepo)
+	return convert.ToArray(todos, convert.ToTodoFromRepo), nil
+}
+
+func (t *tasksPostgres) CheckTodo(ctx context.Context, todo *models.Todo) error {
+	query := `update todo_list set completed = true where id = $1`
+	_, err := t.pool.Exec(ctx, query, todo.Id)
+	return err
+}
+
+func (t *tasksPostgres) GetGoalsById(ctx context.Context, employeeId int64) ([]models.Goal, error) {
+	var goals []repoModels.Goal
+	query := `select g.id, g.name, g.description, g.employee_id, t.track
+	from goals g
+    join goal_tracks t on g.track_id = t.id
+    where g.employee_id = $1`
+
+	err := pgxscan.Select(ctx, t.pool, &goals, query, employeeId)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return convert.ToArray(goals, convert.ToGoalFromRepo), nil
 }
