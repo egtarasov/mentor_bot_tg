@@ -45,5 +45,5 @@ VALUES
 
 -- +goose Down
 -- +goose StatementBegin
-truncate table commands;
+truncate table commands, materials;
 -- +goose StatementEnd

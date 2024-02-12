@@ -15,7 +15,7 @@ type Bot interface {
 	// Returns the chan of processed updates.
 	Start(ctx context.Context) <-chan *models.Update
 
-	SendMessage(ctx context.Context, message models.Message) error
+	SendMessage(ctx context.Context, message *models.Message) error
 
-	SendButtons(ctx context.Context, buttons models.Buttons) error
+	SendButtons(ctx context.Context, buttons *models.Buttons) error
 }

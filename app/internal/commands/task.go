@@ -69,35 +69,9 @@ func (c *checkTodoCmd) Execute(ctx context.Context, job *Job) error {
 		return err
 	}
 
-	// Wait for a user update with response.
-	var number int
-	for {
-		update := job.Queue.WaitForUpdate()
-		number, err = strconv.Atoi(update.Message)
-		if err != nil {
-			err = container.Container.Bot().SendMessage(
-				ctx,
-				models.NewMessage(
-					"Это не число, попробуйте снова!",
-					job.Update.ChatId))
-			if err != nil {
-				return err
-			}
-			continue
-		}
-
-		if number >= len(todos) || number < 0 {
-			err = container.Container.Bot().SendMessage(
-				ctx,
-				models.NewMessage(
-					"Введенное число превышает допустимое значение, попробуйет снова!",
-					job.Update.ChatId))
-			if err != nil {
-				return err
-			}
-			continue
-		}
-		break
+	number, err := getNumber(ctx, job, len(todos))
+	if err != nil {
+		return err
 	}
 
 	// Check the todo as completed.
@@ -109,6 +83,45 @@ func (c *checkTodoCmd) Execute(ctx context.Context, job *Job) error {
 	return container.Container.Bot().SendMessage(
 		ctx,
 		models.NewMessage("Задача была отмечена выполненой!", job.Update.ChatId))
+}
+
+// getNumber waits for a number from 1 to limit from the user. If the limit less or equal zero, there is no upper bound.
+// Assuming that the message with the request for a number has been already sent. If 'Отмена' will be sent, cancel the
+// processing with the corresponding error.
+func getNumber(ctx context.Context, job *Job, limit int) (number int, err error) {
+	for {
+		update := job.Queue.WaitForUpdate()
+		if update.Message == CancelMessage {
+			return 0, ErrCanceled
+		}
+		number, err = strconv.Atoi(update.Message)
+		if err != nil {
+			err = container.Container.Bot().SendMessage(
+				ctx,
+				models.NewMessage(
+					"Это не число, попробуйте снова!",
+					job.Update.ChatId))
+			if err != nil {
+				return 0, err
+			}
+			continue
+		}
+
+		if (limit > 0 && number >= limit) || number < 0 {
+			err = container.Container.Bot().SendMessage(
+				ctx,
+				models.NewMessage(
+					"Введенное число превышает допустимое значение, попробуйет снова!",
+					job.Update.ChatId))
+			if err != nil {
+				return 0, err
+			}
+			continue
+		}
+		break
+	}
+
+	return number, err
 }
 
 type showGoalsCmd struct {

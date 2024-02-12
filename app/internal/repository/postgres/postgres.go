@@ -27,7 +27,7 @@ func (a *userPostgres) GetUserByTag(ctx context.Context, tag int64) (*models.Use
 	query := "select id, name, surname, telegram_id, occupation_id from employees where telegram_id = $1"
 
 	err := pgxscan.Get(ctx, a.pool, &user, query, tag)
-	if errors.Is(err, pgx.ErrNoRows) {
+	if errors.As(err, &pgx.ErrNoRows) {
 		return nil, repository.ErrNoUser
 	}
 	if err != nil {
@@ -56,7 +56,7 @@ func (c *commandPostgres) GetCommand(ctx context.Context, command string) (*mode
 				where c.name = $1`
 
 	err := pgxscan.Get(ctx, c.pool, &cmd, query, command)
-	if errors.Is(err, pgx.ErrNoRows) {
+	if errors.As(err, &pgx.ErrNoRows) {
 		return nil, repository.ErrNoCommand
 	}
 	if err != nil {
@@ -71,7 +71,7 @@ func (c *commandPostgres) GetMaterials(ctx context.Context, cmdId int64) (*model
 	query := `select * from materials where command_id = $1`
 
 	err := pgxscan.Get(ctx, c.pool, &material, query, cmdId)
-	if errors.Is(err, pgx.ErrNoRows) {
+	if errors.As(err, &pgx.ErrNoRows) {
 		return nil, repository.ErrNoMaterial
 	}
 	if err != nil {
@@ -88,11 +88,29 @@ func (c *commandPostgres) GetCommands(ctx context.Context, parentId int64) ([]mo
 				join public.actions a on c.action_id = a.id 
 				where parent_id = $1`
 	err := pgxscan.Select(ctx, c.pool, &commands, query, parentId)
+	if errors.As(err, &pgx.ErrNoRows) {
+		return nil, nil
+	}
 	if err != nil {
 		return nil, err
 	}
 
 	return convert.ToArray(commands, convert.ToCommandFromRepo), err
+}
+
+func (c *commandPostgres) GetImagePath(ctx context.Context, commandId int64) (string, error) {
+	var path string
+	query := `select path from pictures where command_id = $1`
+
+	err := pgxscan.Get(ctx, c.pool, &path, query, commandId)
+	if errors.As(err, &pgx.ErrNoRows) {
+		return "", repository.ErrNoImage
+	}
+	if err != nil {
+		return "", err
+	}
+
+	return path, nil
 }
 
 type tasksPostgres struct {
@@ -110,7 +128,7 @@ func (t *tasksPostgres) GetTasksById(ctx context.Context, employeeId int64) ([]m
 	query := `select id, name, description, story_points, completed, employee_id from tasks where employee_id = $1`
 
 	err := pgxscan.Select(ctx, t.pool, &tasks, query, employeeId)
-	if errors.Is(err, pgx.ErrNoRows) {
+	if errors.As(err, &pgx.ErrNoRows) {
 		return nil, nil
 	}
 	if err != nil {
@@ -125,7 +143,7 @@ func (t *tasksPostgres) GetTodoListById(ctx context.Context, employeeId int64) (
 	query := `select id, label, priority, employee_id, completed from todo_list where employee_id = $1`
 
 	err := pgxscan.Select(ctx, t.pool, &todos, query, employeeId)
-	if errors.Is(err, pgx.ErrNoRows) {
+	if errors.As(err, &pgx.ErrNoRows) {
 		return nil, nil
 	}
 	if err != nil {
@@ -149,7 +167,7 @@ func (t *tasksPostgres) GetGoalsById(ctx context.Context, employeeId int64) ([]m
     where g.employee_id = $1`
 
 	err := pgxscan.Select(ctx, t.pool, &goals, query, employeeId)
-	if errors.Is(err, pgx.ErrNoRows) {
+	if errors.As(err, &pgx.ErrNoRows) {
 		return nil, nil
 	}
 	if err != nil {

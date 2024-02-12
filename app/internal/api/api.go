@@ -154,7 +154,9 @@ func (a *app) processJob(job *commands.Job) {
 	}
 
 	err := cmd.Execute(a.ctx, job)
-	if err != nil {
+	if errors.Is(err, commands.ErrCanceled) {
+		_ = container.Container.Bot().SendMessage(a.ctx, models.NewMessage(CancelMessage, job.Update.ChatId))
+	} else if err != nil {
 		// TODO logging
 	}
 }

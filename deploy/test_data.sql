@@ -15,3 +15,6 @@ values ('default');
 
 insert into goals (name, description, employee_id, track_id)
 values ('Стать успещным', 'Достигнуть успеза', 1, 1);
+
+insert into pictures (path, command_id)
+values ('../images/start.jpeg', 1);

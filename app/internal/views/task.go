@@ -23,7 +23,8 @@ func listTodo(todos []models.Todo, msg *strings.Builder) {
 
 func CheckTodo(todos []models.Todo) string {
 	var msg strings.Builder
-	msg.WriteString("Введи номер задачи, которую ты хочешь отметить выполненной:\n")
+	msg.WriteString("Введи номер задачи, которую ты хочешь отметить выполненной или 'Отмена'," +
+		" чтобы отменить действие:\n")
 
 	listTodo(todos, &msg)
 
@@ -45,5 +46,5 @@ func GetGoals(goals []models.Goal) string {
 }
 
 func goalView(goal *models.Goal) string {
-	return fmt.Sprintf("**%s**\nТрек: %s\n\t%s\n", goal.Name, goal.Track, goal.Description)
+	return fmt.Sprintf("*%s*\nТрек: %s\n\t%s\n", goal.Name, goal.Track, goal.Description)
 }

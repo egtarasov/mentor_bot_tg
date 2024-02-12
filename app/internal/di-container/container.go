@@ -27,7 +27,7 @@ func NewDiContainer(ctx context.Context) error {
 		return err
 	}
 
-	tgBot, err := bot.NewTelegramBot(config.Cfg.TgToken)
+	tgBot, err := bot.NewTelegramBot(config.Cfg.TgToken, "markdown")
 	if err != nil {
 		return err
 	}

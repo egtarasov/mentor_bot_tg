@@ -7,17 +7,25 @@ import (
 )
 
 type telegramBot struct {
-	bot *tgbotapi.BotAPI
+	bot       *tgbotapi.BotAPI
+	parseMode string
 }
 
-func NewTelegramBot(token string) (Bot, error) {
+func NewTelegramBot(token string, parseMode string) (Bot, error) {
 	bot, err := tgbotapi.NewBotAPI(token)
 	if err != nil {
 		return nil, err
 	}
 	return &telegramBot{
-		bot: bot,
+		bot:       bot,
+		parseMode: parseMode,
 	}, nil
+}
+
+func (b *telegramBot) newMessage(message *models.Message) *tgbotapi.MessageConfig {
+	msg := tgbotapi.NewMessage(message.ChatId, message.Message)
+	msg.ParseMode = b.parseMode
+	return &msg
 }
 
 func (b *telegramBot) Start(ctx context.Context) <-chan *models.Update {
@@ -56,17 +64,16 @@ func telegramToUpdate(update *tgbotapi.Update) *models.Update {
 	}
 }
 
-func (b *telegramBot) SendMessage(ctx context.Context, message models.Message) error {
-	msg := tgbotapi.NewMessage(message.ChatId, message.Message)
+func (b *telegramBot) SendMessage(ctx context.Context, message *models.Message) error {
+	msg := b.newMessage(message)
 	_, err := b.bot.Send(msg)
 	if err != nil {
 		return ErrMessageSend
 	}
-
 	return nil
 }
 
-func (b *telegramBot) SendButtons(ctx context.Context, buttons models.Buttons) error {
+func (b *telegramBot) SendButtons(ctx context.Context, buttons *models.Buttons) error {
 	var keywordButtons [][]tgbotapi.KeyboardButton
 	for _, button := range buttons.Buttons {
 		keywordButtons = append(keywordButtons,

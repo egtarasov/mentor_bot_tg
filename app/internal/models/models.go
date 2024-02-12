@@ -79,8 +79,8 @@ type Goal struct {
 	Track       Track
 }
 
-func NewMessage(msg string, chatID int64) Message {
-	return Message{
+func NewMessage(msg string, chatID int64) *Message {
+	return &Message{
 		Message: msg,
 		ChatId:  chatID,
 	}
