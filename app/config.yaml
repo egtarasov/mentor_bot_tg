@@ -4,3 +4,9 @@
 feedback:
   form: "https://best-company.com/feedback"
   duration: 2 # weeks
+  photo_path: "./images/feedback.jpg"
+
+tasks:
+#  photo_path_goals:
+  photo_path_tasks: "./images/tasks.jpg"
+  photo_path_todos: "./images/todos.jpg"

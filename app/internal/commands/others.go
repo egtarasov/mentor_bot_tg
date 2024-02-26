@@ -36,5 +36,5 @@ func (c *askQuestionCmd) Execute(ctx context.Context, job *Job) error {
 	}
 
 	return container.Container.Bot().
-		SendMessage(ctx, models.NewMessage(views.AskQuestionSuccess(id, question), job.GetChatId()))
+		SendMessage(ctx, views.AskQuestionSuccess(id, question, job.GetChatId()))
 }

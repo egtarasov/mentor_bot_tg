@@ -11,12 +11,19 @@ type Config struct {
 	ConnStr  string
 	TgToken  string
 	Feedback FeedBackConfig
+	Tasks    TasksConfig
 }
 
 type FeedBackConfig struct {
 	Form      string
 	Duration  time.Duration
 	PhotoPath *string
+}
+
+type TasksConfig struct {
+	PhotoPathGoals *string
+	PhotoPathTasks *string
+	PhotoPathTodos *string
 }
 
 var Cfg *Config
@@ -27,13 +34,20 @@ const (
 
 // Yaml configuration.
 type yamlConfig struct {
-	Feedback *feedbackConfig `yaml:"feedback"`
+	Feedback feedbackConfig `yaml:"feedback"`
+	Tasks    tasksConfig    `yaml:"tasks"`
 }
 
 type feedbackConfig struct {
 	Form      string  `yaml:"form"`
 	Duration  int     `yaml:"duration"`
 	PhotoPath *string `yaml:"photo_path"`
+}
+
+type tasksConfig struct {
+	PhotoPathGoals *string `yaml:"photo_path_goals"`
+	PhotoPathTasks *string `yaml:"photo_path_tasks"`
+	PhotoPathTodos *string `yaml:"photo_path_todos"`
 }
 
 func weeks(n int) time.Duration {
@@ -75,9 +89,16 @@ func NewConfig() error {
 		ConnStr: connString(),
 		TgToken: os.Getenv(tgToken),
 		Feedback: FeedBackConfig{
-			Form:     cfg.Feedback.Form,
-			Duration: weeks(cfg.Feedback.Duration),
+			Form:      cfg.Feedback.Form,
+			Duration:  weeks(cfg.Feedback.Duration),
+			PhotoPath: cfg.Feedback.PhotoPath,
+		},
+		Tasks: TasksConfig{
+			PhotoPathGoals: cfg.Tasks.PhotoPathGoals,
+			PhotoPathTasks: cfg.Tasks.PhotoPathTasks,
+			PhotoPathTodos: cfg.Tasks.PhotoPathTodos,
 		},
 	}
+
 	return nil
 }

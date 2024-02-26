@@ -3,16 +3,20 @@ package views
 import (
 	"fmt"
 	"strings"
+	"telegrambot_new_emploee/internal/config"
 	"telegrambot_new_emploee/internal/models"
 )
 
-func ShowTodo(todos []models.Todo) string {
+func ShowTodo(todos []models.Todo, chatId int64) *models.Message {
+	if len(todos) == 0 {
+		return models.NewMessage("В твоем чек-листе не осталось заданий!", chatId)
+	}
 	var msg strings.Builder
 	msg.WriteString("Список задач в твоем чек-листе:\n")
 
 	listTodo(todos, &msg)
 
-	return msg.String()
+	return models.NewMessageWithPhoto(msg.String(), chatId, config.Cfg.Tasks.PhotoPathTodos)
 }
 
 func listTodo(todos []models.Todo, msg *strings.Builder) {
@@ -21,19 +25,19 @@ func listTodo(todos []models.Todo, msg *strings.Builder) {
 	}
 }
 
-func CheckTodo(todos []models.Todo) string {
+func CheckTodo(todos []models.Todo, chatId int64) *models.Message {
 	var msg strings.Builder
 	msg.WriteString("Введи номер задачи, которую ты хочешь отметить выполненной или 'Отмена'," +
 		" чтобы отменить действие:\n")
 
 	listTodo(todos, &msg)
 
-	return msg.String()
+	return models.NewMessage(msg.String(), chatId)
 }
 
-func GetGoals(goals []models.Goal) string {
+func GetGoals(goals []models.Goal, chatId int64) *models.Message {
 	if len(goals) == 0 {
-		return "Ты выполнил все свои цели!"
+		return models.NewMessage("Ты выполнил все свои цели!", chatId)
 	}
 	var msg strings.Builder
 	msg.WriteString("**Цели**\n")
@@ -42,16 +46,16 @@ func GetGoals(goals []models.Goal) string {
 		msg.WriteString(goalView(&goal))
 	}
 
-	return msg.String()
+	return models.NewMessageWithPhoto(msg.String(), chatId, config.Cfg.Tasks.PhotoPathGoals)
 }
 
 func goalView(goal *models.Goal) string {
 	return fmt.Sprintf("*%s*\nТрек: %s\n\t%s\n", goal.Name, goal.Track, goal.Description)
 }
 
-func GetTasks(tasks []models.Task) string {
+func GetTasks(tasks []models.Task, chatId int64) *models.Message {
 	if len(tasks) == 0 {
-		return "Ты выполнил все свои задачи!"
+		return models.NewMessage("Ты выполнил все свои задачи!", chatId)
 	}
 	var msg strings.Builder
 	msg.WriteString("*Задачи*:\n\n")
@@ -62,7 +66,7 @@ func GetTasks(tasks []models.Task) string {
 		msg.WriteString("\n")
 	}
 
-	return msg.String()
+	return models.NewMessageWithPhoto(msg.String(), chatId, config.Cfg.Tasks.PhotoPathTasks)
 }
 
 func taskView(task *models.Task) string {

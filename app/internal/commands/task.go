@@ -21,10 +21,9 @@ func (c *showTodoListCmd) Execute(ctx context.Context, job *Job) error {
 	if err != nil {
 		return err
 	}
-	msg := views.ShowTodo(todos)
 
 	// Show the user their uncompleted todos.
-	return container.Container.Bot().SendMessage(ctx, models.NewMessage(msg, job.GetChatId()))
+	return container.Container.Bot().SendMessage(ctx, views.ShowTodo(todos, job.GetChatId()))
 }
 
 func getUncompletedTodo(ctx context.Context, userId int64) ([]models.Todo, error) {
@@ -62,8 +61,7 @@ func (c *checkTodoCmd) Execute(ctx context.Context, job *Job) error {
 	}
 
 	// Ask the user for a button.
-	msg := views.CheckTodo(todos)
-	err = container.Container.Bot().SendMessage(ctx, models.NewMessage(msg, job.GetChatId()))
+	err = container.Container.Bot().SendMessage(ctx, views.CheckTodo(todos, job.GetChatId()))
 	if err != nil {
 		return err
 	}
@@ -97,9 +95,7 @@ func (c *showGoalsCmd) Execute(ctx context.Context, job *Job) error {
 		return err
 	}
 
-	msg := views.GetGoals(goals)
-
-	return container.Container.Bot().SendMessage(ctx, models.NewMessage(msg, job.GetChatId()))
+	return container.Container.Bot().SendMessage(ctx, views.GetGoals(goals, job.GetChatId()))
 }
 
 type showTasksCmd struct {
@@ -114,8 +110,7 @@ func (c *showTasksCmd) Execute(ctx context.Context, job *Job) error {
 	if err != nil {
 		return err
 	}
-	return container.Container.Bot().
-		SendMessage(ctx, models.NewMessage(views.GetTasks(tasks), job.GetChatId()))
+	return container.Container.Bot().SendMessage(ctx, views.GetTasks(tasks, job.GetChatId()))
 }
 
 func getUncompletedTask(ctx context.Context, userId int64) ([]models.Task, error) {
