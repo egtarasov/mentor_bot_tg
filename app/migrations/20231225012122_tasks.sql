@@ -3,10 +3,11 @@
  CREATE TABLE tasks (
      id BIGSERIAL PRIMARY KEY,
      name VARCHAR(1024) NOT NULL,
-     description VARCHAR(4096) DEFAULT NULL,
+     description VARCHAR(4096) NOT NULL,
      story_points INT NOT NULL DEFAULT 0,
-     completed BOOLEAN NOT NULL DEFAULT FALSE,
-     employee_id BIGINT REFERENCES employees(id)
+     employee_id BIGINT REFERENCES employees(id),
+     created_at timestamp not null default now(),
+     completed_at timestamp default null
  );
 
 CREATE TABLE todo_list (

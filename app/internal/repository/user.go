@@ -12,4 +12,5 @@ var (
 
 type UserRepo interface {
 	GetUserByTag(ctx context.Context, userId int64) (*models.User, error)
+	GetUsersOnAdaptation(ctx context.Context) ([]models.User, error)
 }

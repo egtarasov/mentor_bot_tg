@@ -24,7 +24,9 @@ func NewUserPostgres(pool *pgxpool.Pool) repository.UserRepo {
 
 func (a *userPostgres) GetUserByTag(ctx context.Context, tag int64) (*models.User, error) {
 	var user repoModels.User
-	query := "select id, name, surname, telegram_id, occupation_id from employees where telegram_id = $1"
+	query := `select 
+    			id, name, surname, telegram_id, occupation_id, first_working_day, adaptation_end_at 
+				from employees where telegram_id = $1`
 
 	err := pgxscan.Get(ctx, a.pool, &user, query, tag)
 	if errors.As(err, &pgx.ErrNoRows) {
@@ -35,6 +37,24 @@ func (a *userPostgres) GetUserByTag(ctx context.Context, tag int64) (*models.Use
 	}
 
 	return convert.ToUserFromRepo(&user), nil
+}
+
+func (a *userPostgres) GetUsersOnAdaptation(ctx context.Context) ([]models.User, error) {
+	var users []repoModels.User
+	query := `select 
+    			id, name, surname, telegram_id, occupation_id, first_working_day, adaptation_end_at 
+				from employees
+				where adaptation_end_at > now()`
+
+	err := pgxscan.Select(ctx, a.pool, &users, query)
+	if errors.As(err, &pgx.ErrNoRows) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return convert.ToArray(users, convert.ToUserFromRepo), nil
 }
 
 type commandPostgres struct {
@@ -98,19 +118,19 @@ func (c *commandPostgres) GetCommands(ctx context.Context, parentId int64) ([]mo
 	return convert.ToArray(commands, convert.ToCommandFromRepo), err
 }
 
-func (c *commandPostgres) GetImagePath(ctx context.Context, commandId int64) (string, error) {
+func (c *commandPostgres) GetImagePath(ctx context.Context, commandId int64) (*string, error) {
 	var path string
 	query := `select path from pictures where command_id = $1`
 
 	err := pgxscan.Get(ctx, c.pool, &path, query, commandId)
 	if errors.As(err, &pgx.ErrNoRows) {
-		return "", repository.ErrNoImage
+		return nil, repository.ErrNoImage
 	}
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return path, nil
+	return &path, nil
 }
 
 type tasksPostgres struct {
@@ -125,7 +145,9 @@ func NewTasksRepo(pool *pgxpool.Pool) repository.TasksRepo {
 
 func (t *tasksPostgres) GetTasksById(ctx context.Context, employeeId int64) ([]models.Task, error) {
 	var tasks []repoModels.Task
-	query := `select id, name, description, story_points, completed, employee_id from tasks where employee_id = $1`
+	query := `select id, name, description, story_points, employee_id, created_at, completed_at 
+				from tasks 
+				where employee_id = $1`
 
 	err := pgxscan.Select(ctx, t.pool, &tasks, query, employeeId)
 	if errors.As(err, &pgx.ErrNoRows) {
@@ -175,4 +197,11 @@ func (t *tasksPostgres) GetGoalsById(ctx context.Context, employeeId int64) ([]m
 	}
 
 	return convert.ToArray(goals, convert.ToGoalFromRepo), nil
+}
+
+func (t *tasksPostgres) CreateQuestion(ctx context.Context, question *models.Question) (int64, error) {
+	query := `insert into questions (text, user_id) values ($1, $2)  returning id`
+	var id int64
+	err := t.pool.QueryRow(ctx, query, question.Text, question.UserId).Scan(&id)
+	return id, err
 }

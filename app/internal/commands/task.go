@@ -3,7 +3,6 @@ package commands
 import (
 	"context"
 	"sort"
-	"strconv"
 	container "telegrambot_new_emploee/internal/di-container"
 	"telegrambot_new_emploee/internal/models"
 	"telegrambot_new_emploee/internal/views"
@@ -25,7 +24,7 @@ func (c *showTodoListCmd) Execute(ctx context.Context, job *Job) error {
 	msg := views.ShowTodo(todos)
 
 	// Show the user their uncompleted todos.
-	return container.Container.Bot().SendMessage(ctx, models.NewMessage(msg, job.Update.ChatId))
+	return container.Container.Bot().SendMessage(ctx, models.NewMessage(msg, job.GetChatId()))
 }
 
 func getUncompletedTodo(ctx context.Context, userId int64) ([]models.Todo, error) {
@@ -64,7 +63,7 @@ func (c *checkTodoCmd) Execute(ctx context.Context, job *Job) error {
 
 	// Ask the user for a button.
 	msg := views.CheckTodo(todos)
-	err = container.Container.Bot().SendMessage(ctx, models.NewMessage(msg, job.Update.ChatId))
+	err = container.Container.Bot().SendMessage(ctx, models.NewMessage(msg, job.GetChatId()))
 	if err != nil {
 		return err
 	}
@@ -82,46 +81,7 @@ func (c *checkTodoCmd) Execute(ctx context.Context, job *Job) error {
 
 	return container.Container.Bot().SendMessage(
 		ctx,
-		models.NewMessage("Задача была отмечена выполненой!", job.Update.ChatId))
-}
-
-// getNumber waits for a number from 1 to limit from the user. If the limit less or equal zero, there is no upper bound.
-// Assuming that the message with the request for a number has been already sent. If 'Отмена' will be sent, cancel the
-// processing with the corresponding error.
-func getNumber(ctx context.Context, job *Job, limit int) (number int, err error) {
-	for {
-		update := job.Queue.WaitForUpdate()
-		if update.Message == CancelMessage {
-			return 0, ErrCanceled
-		}
-		number, err = strconv.Atoi(update.Message)
-		if err != nil {
-			err = container.Container.Bot().SendMessage(
-				ctx,
-				models.NewMessage(
-					"Это не число, попробуйте снова!",
-					job.Update.ChatId))
-			if err != nil {
-				return 0, err
-			}
-			continue
-		}
-
-		if (limit > 0 && number >= limit) || number < 0 {
-			err = container.Container.Bot().SendMessage(
-				ctx,
-				models.NewMessage(
-					"Введенное число превышает допустимое значение, попробуйет снова!",
-					job.Update.ChatId))
-			if err != nil {
-				return 0, err
-			}
-			continue
-		}
-		break
-	}
-
-	return number, err
+		models.NewMessage("Задача была отмечена выполненой!", job.GetChatId()))
 }
 
 type showGoalsCmd struct {
@@ -139,5 +99,36 @@ func (c *showGoalsCmd) Execute(ctx context.Context, job *Job) error {
 
 	msg := views.GetGoals(goals)
 
-	return container.Container.Bot().SendMessage(ctx, models.NewMessage(msg, job.Update.ChatId))
+	return container.Container.Bot().SendMessage(ctx, models.NewMessage(msg, job.GetChatId()))
+}
+
+type showTasksCmd struct {
+}
+
+func NewShowTasksCmd() Cmd {
+	return &showTasksCmd{}
+}
+
+func (c *showTasksCmd) Execute(ctx context.Context, job *Job) error {
+	tasks, err := getUncompletedTask(ctx, job.User.Id)
+	if err != nil {
+		return err
+	}
+	return container.Container.Bot().
+		SendMessage(ctx, models.NewMessage(views.GetTasks(tasks), job.GetChatId()))
+}
+
+func getUncompletedTask(ctx context.Context, userId int64) ([]models.Task, error) {
+	tasks, err := container.Container.TaskRepo().GetTasksById(ctx, userId)
+	if err != nil {
+		return nil, err
+	}
+	uncompletedTasks := make([]models.Task, 0, len(tasks))
+	for _, task := range tasks {
+		if task.CompletedAt != nil {
+			continue
+		}
+		uncompletedTasks = append(uncompletedTasks, task)
+	}
+	return uncompletedTasks, nil
 }

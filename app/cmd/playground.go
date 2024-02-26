@@ -58,7 +58,7 @@ func images() {
 	ch := bot.GetUpdatesChan(cfg)
 	for update := range ch {
 		//msg := tgbotapi.NewMessage(update.Message.From.ID, "hello")
-		photo := tgbotapi.NewPhoto(update.Message.From.ID, tgbotapi.FilePath(path))
+		photo := tgbotapi.NewPhoto(update.Message.From.ID, tgbotapi.FilePath(*path))
 		photo.Caption = "hello my friend"
 		up, err := bot.Send(photo)
 		if err != nil {

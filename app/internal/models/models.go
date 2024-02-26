@@ -1,5 +1,9 @@
 package models
 
+import (
+	"time"
+)
+
 type Update struct {
 	UpdateUserId int64
 	User         *User
@@ -8,10 +12,12 @@ type Update struct {
 }
 
 type User struct {
-	Id           int64
-	TelegramId   int64
-	Name         string
-	OccupationId int64
+	Id             int64
+	TelegramId     int64
+	Name           string
+	OccupationId   int64
+	StartWork      time.Time
+	AdaptationEnds time.Time
 }
 
 type Action string
@@ -48,27 +54,28 @@ type Task struct {
 	Name        string
 	Description string
 	StoryPoints int64
-	Completed   bool
 	EmployeeId  int64
+	CreatedAt   time.Time
+	CompletedAt *time.Time
 }
 
 type Message struct {
-	Message string
-	ChatId  int64
+	PhotoPath *string
+	Message   string
+	ChatId    int64
 }
 
 type Button string
 
 type Buttons struct {
-	ChatId  int64
-	Buttons []Button
-	Message string
+	Message *Message
+	Buttons [][]Button
 }
 
-type Track string
+type GoalTrack string
 
 const (
-	DefaultTrack Track = "default"
+	DefaultTrack GoalTrack = "default"
 )
 
 type Goal struct {
@@ -76,12 +83,37 @@ type Goal struct {
 	Name        string
 	Description string
 	EmployeeId  int64
-	Track       Track
+	Track       GoalTrack
+}
+
+type Question struct {
+	Id         int64
+	UserId     int64
+	Text       string
+	CreatedAt  time.Time
+	AnsweredAt *time.Time
+	AnsweredBy *int64
+	Answer     *string
 }
 
 func NewMessage(msg string, chatID int64) *Message {
 	return &Message{
 		Message: msg,
 		ChatId:  chatID,
+	}
+}
+
+func NewMessageWithPhoto(msg string, chatID int64, photoPath *string) *Message {
+	return &Message{
+		PhotoPath: photoPath,
+		Message:   msg,
+		ChatId:    chatID,
+	}
+}
+
+func NewQuestion(text string, userId int64) *Question {
+	return &Question{
+		UserId: userId,
+		Text:   text,
 	}
 }

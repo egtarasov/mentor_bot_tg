@@ -7,6 +7,7 @@ import (
 	"sync"
 	"telegrambot_new_emploee/internal/commands"
 	"telegrambot_new_emploee/internal/config"
+	"telegrambot_new_emploee/internal/daemons"
 	container "telegrambot_new_emploee/internal/di-container"
 	"telegrambot_new_emploee/internal/models"
 	"telegrambot_new_emploee/internal/repository"
@@ -66,6 +67,9 @@ func addCommands(app *app) {
 		{key: "Показать чек-лист", cmd: commands.NewShowTodoListCmd()},
 		{key: "Отметить задачу в чек-листе", cmd: commands.NewCheckTodoCmd()},
 		{key: "Цели", cmd: commands.NewShowGoalCmd()},
+		{key: "Показать задачи", cmd: commands.NewShowTasksCmd()},
+		{key: "Задать вопрос", cmd: commands.NewAskQuestionCmd()},
+		{key: "Показать задачт", cmd: commands.NewShowTasksCmd()},
 	}
 
 	for _, node := range complexCmd {
@@ -80,7 +84,13 @@ func Run() {
 	}
 	addCommands(app)
 
+	app.runDaemons()
+
 	app.run()
+}
+
+func (a *app) runDaemons() {
+	go daemons.NewFeedbackDaemon(a.ctx)
 }
 
 func (a *app) run() {
@@ -94,6 +104,15 @@ func (a *app) run() {
 	a.wgUpdates.Wait()
 }
 
+func (a *app) changeUpdate(update *models.Update) {
+	commandsSubstitutions := map[string]string{
+		"В меню": "/start",
+	}
+	if val, ok := commandsSubstitutions[update.Message]; ok {
+		update.Message = val
+	}
+}
+
 // processUpdate process the incoming update. Each update is placed into the updateQueue for the appropriate user, where
 // it will be processed later on. If the queue did not exist (the user did not communicate recently with the bot), a new
 // queue will be created and the processing goroutine for this queue will start.
@@ -102,8 +121,13 @@ func (a *app) processUpdate(update *models.Update) {
 	user := a.authenticate(update)
 	if user == nil {
 		// TODO return the message that user is unknown.
+		_ = container.Container.Bot().
+			SendMessage(a.ctx,
+				models.NewMessage("Ой, ой! Кажется, вы не являетесь сотрудником!", update.ChatId))
 		return
 	}
+
+	a.changeUpdate(update)
 
 	// Get or create a queue for a user and put update into it.
 	queue, ok := a.users.GetOrCreate(user.Id)

@@ -1,20 +1,10 @@
 package convert
 
 import (
+	"database/sql"
 	"telegrambot_new_emploee/internal/models"
 	repoModels "telegrambot_new_emploee/internal/repository/models"
 )
-
-func ToTaskFromRepo(task *repoModels.Task) *models.Task {
-	return &models.Task{
-		Id:          task.Id,
-		Name:        task.Name,
-		Description: task.Description,
-		StoryPoints: task.StoryPoints,
-		Completed:   task.Completed,
-		EmployeeId:  task.EmployeeId,
-	}
-}
 
 func ToCommandFromRepo(cmd *repoModels.Command) *models.Command {
 	return &models.Command{
@@ -37,10 +27,12 @@ func ToTodoFromRepo(todo *repoModels.Todo) *models.Todo {
 
 func ToUserFromRepo(user *repoModels.User) *models.User {
 	return &models.User{
-		Id:           user.Id,
-		TelegramId:   user.TelegramId,
-		Name:         user.Name,
-		OccupationId: user.OccupationId,
+		Id:             user.Id,
+		TelegramId:     user.TelegramId,
+		Name:           user.Name,
+		OccupationId:   user.OccupationId,
+		StartWork:      user.StartWork,
+		AdaptationEnds: user.AdaptationEnds,
 	}
 }
 
@@ -58,7 +50,39 @@ func ToGoalFromRepo(goal *repoModels.Goal) *models.Goal {
 		Name:        goal.Name,
 		Description: goal.Description,
 		EmployeeId:  goal.EmployeeId,
-		Track:       models.Track(goal.Track),
+		Track:       models.GoalTrack(goal.Track),
+	}
+}
+
+func sqlNullToPointer[T any](value sql.Null[T]) *T {
+	if value.Valid {
+		return &value.V
+	}
+
+	return nil
+}
+
+func ToQuestionFromRepo(question *repoModels.Question) *models.Question {
+	return &models.Question{
+		Id:         question.Id,
+		UserId:     question.UserId,
+		Text:       question.Text,
+		CreatedAt:  question.CreatedAt,
+		AnsweredAt: sqlNullToPointer(question.AnsweredAt),
+		AnsweredBy: sqlNullToPointer(question.AnsweredBy),
+		Answer:     sqlNullToPointer(question.Answer),
+	}
+}
+
+func ToTaskFromRepo(task *repoModels.Task) *models.Task {
+	return &models.Task{
+		Id:          task.Id,
+		Name:        task.Name,
+		Description: task.Description,
+		StoryPoints: task.StoryPoints,
+		EmployeeId:  task.EmployeeId,
+		CreatedAt:   task.CreatedAt,
+		CompletedAt: sqlNullToPointer(task.CompletedAt),
 	}
 }
 

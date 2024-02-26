@@ -35,6 +35,10 @@ func NewJob(
 	return job, true
 }
 
+func (j *Job) GetChatId() int64 {
+	return j.Update.ChatId
+}
+
 func (j *Job) getCommand() bool {
 	command, err := container.Container.CmdRepo().GetCommand(j.Ctx, j.Update.Message)
 	if err != nil {

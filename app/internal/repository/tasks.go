@@ -10,4 +10,5 @@ type TasksRepo interface {
 	GetTodoListById(ctx context.Context, employeeId int64) ([]models.Todo, error)
 	CheckTodo(ctx context.Context, todoId *models.Todo) error
 	GetGoalsById(ctx context.Context, employeeId int64) ([]models.Goal, error)
+	CreateQuestion(ctx context.Context, question *models.Question) (int64, error)
 }

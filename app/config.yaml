@@ -1,0 +1,6 @@
+# config.yaml
+
+
+feedback:
+  form: "https://best-company.com/feedback"
+  duration: 2 # weeks

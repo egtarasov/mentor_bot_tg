@@ -22,10 +22,26 @@ func NewTelegramBot(token string, parseMode string) (Bot, error) {
 	}, nil
 }
 
-func (b *telegramBot) newMessage(message *models.Message) *tgbotapi.MessageConfig {
+func (b *telegramBot) newPhoto(message *models.Message, markUp any) *tgbotapi.PhotoConfig {
+	photo := tgbotapi.NewPhoto(message.ChatId, tgbotapi.FilePath(*message.PhotoPath))
+	photo.Caption = message.Message
+	photo.ParseMode = b.parseMode
+	photo.ReplyMarkup = markUp
+	return &photo
+}
+
+func (b *telegramBot) newMessage(message *models.Message, markUp any) *tgbotapi.MessageConfig {
 	msg := tgbotapi.NewMessage(message.ChatId, message.Message)
 	msg.ParseMode = b.parseMode
+	msg.ReplyMarkup = markUp
 	return &msg
+}
+
+func (b *telegramBot) newChattable(message *models.Message, markup any) tgbotapi.Chattable {
+	if message.PhotoPath != nil {
+		return b.newPhoto(message, markup)
+	}
+	return b.newMessage(message, markup)
 }
 
 func (b *telegramBot) Start(ctx context.Context) <-chan *models.Update {
@@ -65,7 +81,7 @@ func telegramToUpdate(update *tgbotapi.Update) *models.Update {
 }
 
 func (b *telegramBot) SendMessage(ctx context.Context, message *models.Message) error {
-	msg := b.newMessage(message)
+	msg := b.newChattable(message, nil)
 	_, err := b.bot.Send(msg)
 	if err != nil {
 		return ErrMessageSend
@@ -75,15 +91,14 @@ func (b *telegramBot) SendMessage(ctx context.Context, message *models.Message) 
 
 func (b *telegramBot) SendButtons(ctx context.Context, buttons *models.Buttons) error {
 	var keywordButtons [][]tgbotapi.KeyboardButton
-	for _, button := range buttons.Buttons {
-		keywordButtons = append(keywordButtons,
-			[]tgbotapi.KeyboardButton{
-				tgbotapi.NewKeyboardButton(string(button)),
-			})
+	for _, row := range buttons.Buttons {
+		keyBoardRow := make([]tgbotapi.KeyboardButton, 0, len(row))
+		for _, button := range row {
+			keyBoardRow = append(keyBoardRow, tgbotapi.NewKeyboardButton(string(button)))
+		}
+		keywordButtons = append(keywordButtons, keyBoardRow)
 	}
-
-	msg := tgbotapi.NewMessage(buttons.ChatId, buttons.Message)
-	msg.ReplyMarkup = tgbotapi.NewReplyKeyboard(keywordButtons...)
+	msg := b.newChattable(buttons.Message, tgbotapi.NewReplyKeyboard(keywordButtons...))
 	_, err := b.bot.Send(msg)
 
 	return err

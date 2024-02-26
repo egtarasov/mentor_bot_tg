@@ -6,3 +6,7 @@ migration-up:
 
 migration-down:
 	goose -dir ./migrations postgres "${POSTGRES_SETUP_TEST}" down
+
+
+build:
+	go build -o app ./cmd/main.go

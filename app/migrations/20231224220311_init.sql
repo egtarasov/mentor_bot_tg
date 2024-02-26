@@ -11,7 +11,7 @@ CREATE TABLE commands (
     id BIGSERIAL PRIMARY KEY,
     name varchar(100) NOT NULL UNIQUE,
     action_id BIGINT REFERENCES actions(id),
-    parent_id BIGINT REFERENCES commands(id)
+    parent_id BIGINT DEFAULT NULL
 );
 
 CREATE TABLE occupations (
@@ -19,12 +19,14 @@ CREATE TABLE occupations (
     occupation VARCHAR(100) NOT NULL
 );
 
-CREATE TABLE employees (
-    id BIGSERIAL PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
-    surname VARCHAR(100) DEFAULT NULL,
-    telegram_id BIGINT NOT NULL UNIQUE,
-    occupation_id BIGINT REFERENCES occupations(id)
+CREATE TABLE employees(
+    id                BIGSERIAL PRIMARY KEY,
+    name              VARCHAR(100) NOT NULL,
+    surname           VARCHAR(100)          DEFAULT NULL,
+    telegram_id       BIGINT       NOT NULL UNIQUE,
+    occupation_id     BIGINT REFERENCES occupations (id),
+    first_working_day date         not null default now(),
+    adaptation_end_at date         not null default current_date + 90
 );
 
 -- Insert values
@@ -41,5 +43,5 @@ VALUES ('developer');
 
 -- +goose Down
 -- +goose StatementBegin
-DROP TABLE employees, occupations, commands, actions;
+DROP TABLE commands, actions, employees, occupations;
 -- +goose StatementEnd

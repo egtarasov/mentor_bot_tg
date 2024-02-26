@@ -16,5 +16,5 @@ type CommandRepo interface {
 	GetCommand(ctx context.Context, command string) (*models.Command, error)
 	GetMaterials(ctx context.Context, cmdId int64) (*models.Material, error)
 	GetCommands(ctx context.Context, parentId int64) ([]models.Command, error)
-	GetImagePath(ctx context.Context, commandId int64) (string, error)
+	GetImagePath(ctx context.Context, commandId int64) (*string, error)
 }

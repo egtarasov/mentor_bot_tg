@@ -1,5 +1,10 @@
 package models
 
+import (
+	"database/sql"
+	"time"
+)
+
 type Command struct {
 	Id       int64  `db:"id"`
 	Name     string `db:"name"`
@@ -14,12 +19,13 @@ type Material struct {
 }
 
 type Task struct {
-	Id          int64  `db:"id"`
-	Name        string `db:"name"`
-	Description string `db:"description"`
-	StoryPoints int64  `db:"story_points"`
-	Completed   bool   `db:"completed"`
-	EmployeeId  int64  `db:"employee_id"`
+	Id          int64               `db:"id"`
+	Name        string              `db:"name"`
+	Description string              `db:"description"`
+	StoryPoints int64               `db:"story_points"`
+	EmployeeId  int64               `db:"employee_id"`
+	CreatedAt   time.Time           `db:"created_at"`
+	CompletedAt sql.Null[time.Time] `db:"completed_at"`
 }
 
 type Todo struct {
@@ -31,11 +37,13 @@ type Todo struct {
 }
 
 type User struct {
-	Id           int64  `db:"id"`
-	Name         string `db:"name"`
-	Surname      string `db:"surname"`
-	TelegramId   int64  `db:"telegram_id"`
-	OccupationId int64  `db:"occupation_id"`
+	Id             int64     `db:"id"`
+	Name           string    `db:"name"`
+	Surname        string    `db:"surname"`
+	TelegramId     int64     `db:"telegram_id"`
+	OccupationId   int64     `db:"occupation_id"`
+	StartWork      time.Time `db:"first_working_day"`
+	AdaptationEnds time.Time `db:"adaptation_end_at"`
 }
 
 type Goal struct {
@@ -44,4 +52,14 @@ type Goal struct {
 	Description string `db:"description"`
 	EmployeeId  int64  `db:"employee_id"`
 	Track       string `db:"track"`
+}
+
+type Question struct {
+	Id         int64               `db:"id"`
+	UserId     int64               `db:"user_id"`
+	Text       string              `db:"text"`
+	CreatedAt  time.Time           `db:"created_at"`
+	AnsweredAt sql.Null[time.Time] `db:"answered_at"`
+	AnsweredBy sql.Null[int64]     `db:"answered_by"`
+	Answer     sql.Null[string]    `db:"answer"`
 }
