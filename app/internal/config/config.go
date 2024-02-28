@@ -12,6 +12,11 @@ type Config struct {
 	TgToken  string
 	Feedback FeedBackConfig
 	Tasks    TasksConfig
+	Admin    AdminConfig
+}
+
+type AdminConfig struct {
+	Port string
 }
 
 type FeedBackConfig struct {
@@ -36,6 +41,11 @@ const (
 type yamlConfig struct {
 	Feedback feedbackConfig `yaml:"feedback"`
 	Tasks    tasksConfig    `yaml:"tasks"`
+	Admin    adminConfig    `yaml:"admin"`
+}
+
+type adminConfig struct {
+	Port string `yaml:"port"`
 }
 
 type feedbackConfig struct {
@@ -97,6 +107,9 @@ func NewConfig() error {
 			PhotoPathGoals: cfg.Tasks.PhotoPathGoals,
 			PhotoPathTasks: cfg.Tasks.PhotoPathTasks,
 			PhotoPathTodos: cfg.Tasks.PhotoPathTodos,
+		},
+		Admin: AdminConfig{
+			Port: cfg.Admin.Port,
 		},
 	}
 

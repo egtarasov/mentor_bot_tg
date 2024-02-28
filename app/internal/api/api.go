@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 	"sync"
+	"telegrambot_new_emploee/internal/admin"
 	"telegrambot_new_emploee/internal/commands"
 	"telegrambot_new_emploee/internal/config"
 	"telegrambot_new_emploee/internal/daemons"
@@ -70,6 +71,7 @@ func addCommands(app *app) {
 		{key: "Показать задачи", cmd: commands.NewShowTasksCmd()},
 		{key: "Задать вопрос", cmd: commands.NewAskQuestionCmd()},
 		{key: "Показать задачт", cmd: commands.NewShowTasksCmd()},
+		{key: "Полезные матерьялы для меня", cmd: commands.NewOccupationMaterialCmd()},
 	}
 
 	for _, node := range complexCmd {
@@ -84,9 +86,14 @@ func Run() {
 	}
 	addCommands(app)
 
-	app.runDaemons()
+	//app.runDaemons()
+	app.runServer()
 
 	app.run()
+}
+
+func (a *app) runServer() {
+	go admin.StartServer()
 }
 
 func (a *app) runDaemons() {

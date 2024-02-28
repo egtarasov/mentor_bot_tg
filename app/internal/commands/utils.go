@@ -38,7 +38,7 @@ func getNumber(ctx context.Context, job *Job, limit int) (number int, err error)
 			continue
 		}
 
-		if (limit > 0 && number >= limit) || number < 0 {
+		if (limit > 0 && number > limit) || number < 0 {
 			err = container.Container.Bot().SendMessage(
 				ctx,
 				models.NewMessage(

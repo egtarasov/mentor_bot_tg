@@ -1,5 +1,7 @@
 # config.yaml
 
+admin:
+  port: ":80"
 
 feedback:
   form: "https://best-company.com/feedback"

@@ -50,7 +50,7 @@ func (b *telegramBot) Start(ctx context.Context) <-chan *models.Update {
 	// Retrieve all updates and convert them to standard format.
 	go func() {
 		cfg := tgbotapi.NewUpdate(0)
-		cfg.Timeout = 60
+		cfg.Timeout = 30
 		ch := b.bot.GetUpdatesChan(cfg)
 		for {
 			select {

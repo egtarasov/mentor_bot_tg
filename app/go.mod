@@ -1,6 +1,6 @@
 module telegrambot_new_emploee
 
-go 1.20
+go 1.22
 
 require (
 	github.com/georgysavva/scany/v2 v2.0.0

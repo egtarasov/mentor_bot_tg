@@ -18,3 +18,12 @@ func AskQuestionSuccess(id int64, text string, chatId int64) *models.Message {
 			"Впорос был передан HR-отедлу, дожидайтесь ответа", id, text)
 	return models.NewMessage(msg, chatId)
 }
+
+func QuestionResponse(question *models.Question, chatId int64) *models.Message {
+	msg := fmt.Sprintf(
+		"Ответ на ваш вопрос номер #%d\n"+
+			"```\n"+
+			"%s\n"+
+			"```", question.Id, *question.Answer)
+	return models.NewMessage(msg, chatId)
+}

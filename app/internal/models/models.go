@@ -28,6 +28,15 @@ const (
 	ComplexCmd        Action = "complex"
 )
 
+func IntToAction(i int) Action {
+	values := map[int]Action{
+		1: GetDataCmd,
+		2: GetSubsectionsCmd,
+		3: ComplexCmd,
+	}
+	return values[i]
+}
+
 type Command struct {
 	Id       int64
 	Name     string
@@ -72,10 +81,10 @@ type Buttons struct {
 	Buttons [][]Button
 }
 
-type GoalTrack string
+type Track string
 
 const (
-	DefaultTrack GoalTrack = "default"
+	DefaultTrack Track = "default"
 )
 
 type Goal struct {
@@ -83,7 +92,7 @@ type Goal struct {
 	Name        string
 	Description string
 	EmployeeId  int64
-	Track       GoalTrack
+	Track       Track
 }
 
 type Question struct {
@@ -94,6 +103,19 @@ type Question struct {
 	AnsweredAt *time.Time
 	AnsweredBy *int64
 	Answer     *string
+}
+
+type Occupation struct {
+	Id       int64
+	Name     string
+	Material string
+}
+
+type CommandWithMaterial struct {
+	Id       int64
+	Name     string
+	Message  string
+	ActionId int64
 }
 
 func NewMessage(msg string, chatID int64) *Message {

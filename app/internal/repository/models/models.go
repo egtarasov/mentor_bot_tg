@@ -63,3 +63,16 @@ type Question struct {
 	AnsweredBy sql.Null[int64]     `db:"answered_by"`
 	Answer     sql.Null[string]    `db:"answer"`
 }
+
+type Occupation struct {
+	Id       int64  `db:"id"`
+	Name     string `db:"name"`
+	Material string `db:"material"`
+}
+
+type CommandWithMaterial struct {
+	Id       int64  `db:"id"`
+	Name     string `db:"name"`
+	Message  string `db:"message"`
+	ActionId int64  `db:"action_id"`
+}

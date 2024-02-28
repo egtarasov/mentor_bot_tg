@@ -12,11 +12,11 @@ import (
 var Container *DiContainer
 
 type DiContainer struct {
-	userRepo repository.UserRepo
-	cmdRepo  repository.CommandRepo
-	taskRepo repository.TasksRepo
-
-	bot bot.Bot
+	userRepo     repository.UserRepo
+	cmdRepo      repository.CommandRepo
+	taskRepo     repository.TasksRepo
+	questionRepo repository.QuestionRepo
+	bot          bot.Bot
 
 	pool *pgxpool.Pool
 }
@@ -66,4 +66,12 @@ func (c *DiContainer) TaskRepo() repository.TasksRepo {
 	}
 
 	return c.taskRepo
+}
+
+func (c *DiContainer) QuestionRepo() repository.QuestionRepo {
+	if c.questionRepo == nil {
+		c.questionRepo = postgres.NewQuestionRepo(c.pool)
+	}
+
+	return c.questionRepo
 }

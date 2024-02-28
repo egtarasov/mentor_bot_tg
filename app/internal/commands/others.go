@@ -29,7 +29,7 @@ func (c *askQuestionCmd) Execute(ctx context.Context, job *Job) error {
 		return ErrCanceled
 	}
 
-	id, err := container.Container.TaskRepo().
+	id, err := container.Container.QuestionRepo().
 		CreateQuestion(ctx, models.NewQuestion(question, job.User.Id))
 	if err != nil {
 		return err

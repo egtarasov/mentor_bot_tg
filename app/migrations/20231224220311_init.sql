@@ -16,7 +16,8 @@ CREATE TABLE commands (
 
 CREATE TABLE occupations (
     id BIGSERIAL PRIMARY KEY,
-    occupation VARCHAR(100) NOT NULL
+    name VARCHAR(100) NOT NULL,
+    material VARCHAR(4096) NOT NULL
 );
 
 CREATE TABLE employees(
@@ -25,8 +26,8 @@ CREATE TABLE employees(
     surname           VARCHAR(100)          DEFAULT NULL,
     telegram_id       BIGINT       NOT NULL UNIQUE,
     occupation_id     BIGINT REFERENCES occupations (id),
-    first_working_day date         not null default now(),
-    adaptation_end_at date         not null default current_date + 90
+    first_working_day date         NOT NULL DEFAULT NOW(),
+    adaptation_end_at date         NOT NULL DEFAULT CURRENT_DATE + 90
 );
 
 -- Insert values
@@ -34,9 +35,9 @@ INSERT INTO actions (action)
 -- TODO should use something better as names
 VALUES ('get data'), ('show subsections'), ('complex');
 
-INSERT INTO occupations (occupation)
+INSERT INTO occupations (name, material)
 -- TODO add all possible occupations
-VALUES ('developer');
+VALUES ('developer', 'Матерьял для разработчиков');
 
 
 -- +goose StatementEnd

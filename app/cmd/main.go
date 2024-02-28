@@ -13,6 +13,5 @@ func main() {
 		log.Fatal(err)
 	}
 
-	//Play()
 	api.Run()
 }

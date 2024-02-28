@@ -127,3 +127,19 @@ func getUncompletedTask(ctx context.Context, userId int64) ([]models.Task, error
 	}
 	return uncompletedTasks, nil
 }
+
+type occupationMaterialCmd struct {
+}
+
+func NewOccupationMaterialCmd() Cmd {
+	return &occupationMaterialCmd{}
+}
+
+func (c *occupationMaterialCmd) Execute(ctx context.Context, job *Job) error {
+	occupation, err := container.Container.TaskRepo().GetOccupationMaterial(ctx, job.User.OccupationId)
+	if err != nil {
+		return err
+	}
+
+	return container.Container.Bot().SendMessage(ctx, models.NewMessage(occupation.Material, job.GetChatId()))
+}

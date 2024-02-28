@@ -20,13 +20,13 @@ func startDaemon(ctx context.Context, duration time.Duration, work daemonWork) {
 	if err != nil {
 		// TODO Log error
 	}
-	timer := time.NewTicker(duration)
+	ticker := time.NewTicker(duration)
 	for {
 		select {
 		// TODO graceful shutdown.
 		case <-ctx.Done():
 			return
-		case <-timer.C:
+		case <-ticker.C:
 			err := work(ctx)
 			if err != nil {
 				// TODO Log error

@@ -50,7 +50,7 @@ func ToGoalFromRepo(goal *repoModels.Goal) *models.Goal {
 		Name:        goal.Name,
 		Description: goal.Description,
 		EmployeeId:  goal.EmployeeId,
-		Track:       models.GoalTrack(goal.Track),
+		Track:       models.Track(goal.Track),
 	}
 }
 
@@ -83,6 +83,23 @@ func ToTaskFromRepo(task *repoModels.Task) *models.Task {
 		EmployeeId:  task.EmployeeId,
 		CreatedAt:   task.CreatedAt,
 		CompletedAt: sqlNullToPointer(task.CompletedAt),
+	}
+}
+
+func ToOccupationFromRepo(occupation *repoModels.Occupation) *models.Occupation {
+	return &models.Occupation{
+		Id:       occupation.Id,
+		Name:     occupation.Name,
+		Material: occupation.Material,
+	}
+}
+
+func ToCommandWithMaterialFromRepo(cmd *repoModels.CommandWithMaterial) *models.CommandWithMaterial {
+	return &models.CommandWithMaterial{
+		Id:       cmd.Id,
+		Name:     cmd.Name,
+		Message:  cmd.Message,
+		ActionId: cmd.ActionId,
 	}
 }
 

@@ -2,7 +2,12 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"telegrambot_new_emploee/internal/models"
+)
+
+var (
+	ErrNoData = fmt.Errorf("")
 )
 
 type TasksRepo interface {
@@ -10,5 +15,5 @@ type TasksRepo interface {
 	GetTodoListById(ctx context.Context, employeeId int64) ([]models.Todo, error)
 	CheckTodo(ctx context.Context, todoId *models.Todo) error
 	GetGoalsById(ctx context.Context, employeeId int64) ([]models.Goal, error)
-	CreateQuestion(ctx context.Context, question *models.Question) (int64, error)
+	GetOccupationMaterial(ctx context.Context, occupationId int64) (*models.Occupation, error)
 }
