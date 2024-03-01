@@ -8,7 +8,7 @@ import (
 type Command struct {
 	Id       int64  `db:"id"`
 	Name     string `db:"name"`
-	Action   string `db:"action"`
+	ActionId int    `db:"action_id"`
 	ParentId int64  `db:"parent_id"`
 }
 

@@ -4,12 +4,13 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"strings"
 	container "telegrambot_new_emploee/internal/di-container"
 	"telegrambot_new_emploee/internal/models"
 )
 
 const (
-	CancelMessage = "Отмена"
+	CancelMessage = "отмена"
 )
 
 var (
@@ -22,7 +23,7 @@ var (
 func getNumber(ctx context.Context, job *Job, limit int) (number int, err error) {
 	for {
 		update := job.Queue.WaitForUpdate()
-		if update.Message == CancelMessage {
+		if strings.ToLower(update.Message) == CancelMessage {
 			return 0, ErrCanceled
 		}
 		number, err = strconv.Atoi(update.Message)
@@ -42,7 +43,7 @@ func getNumber(ctx context.Context, job *Job, limit int) (number int, err error)
 			err = container.Container.Bot().SendMessage(
 				ctx,
 				models.NewMessage(
-					"Введенное число превышает допустимое значение, попробуйет снова!",
+					"Введенное число находится вне допустимого диапазона, попробуйет снова!",
 					job.GetChatId()))
 			if err != nil {
 				return 0, err

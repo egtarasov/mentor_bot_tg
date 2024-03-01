@@ -1,6 +1,8 @@
 package convert
 
-import "telegrambot_new_emploee/internal/models"
+import (
+	"telegrambot_new_emploee/internal/models"
+)
 
 var (
 	returnButton = models.Command{
@@ -46,4 +48,16 @@ func ToButtons(commands []models.Command, cfg *ToButtonsCfg) *models.Buttons {
 	}
 
 	return res
+}
+
+func UncompletedTodo(todos []models.Todo) []models.Todo {
+	uncompletedTodos := make([]models.Todo, 0, len(todos))
+	for _, todo := range todos {
+		if todo.Completed {
+			continue
+		}
+		uncompletedTodos = append(uncompletedTodos, todo)
+	}
+
+	return uncompletedTodos
 }

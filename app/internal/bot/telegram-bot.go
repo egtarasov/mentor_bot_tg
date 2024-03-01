@@ -23,7 +23,19 @@ func NewTelegramBot(token string, parseMode string) (Bot, error) {
 }
 
 func (b *telegramBot) newPhoto(message *models.Message, markUp any) *tgbotapi.PhotoConfig {
-	photo := tgbotapi.NewPhoto(message.ChatId, tgbotapi.FilePath(*message.PhotoPath))
+	var file tgbotapi.RequestFileData
+	switch {
+	case message.PhotoPath != nil:
+		file = tgbotapi.FilePath(*message.PhotoPath)
+	case message.PhotoBytes != nil:
+		file = tgbotapi.FileBytes{
+			Name:  "",
+			Bytes: message.PhotoBytes,
+		}
+	default:
+		return nil
+	}
+	photo := tgbotapi.NewPhoto(message.ChatId, file)
 	photo.Caption = message.Message
 	photo.ParseMode = b.parseMode
 	photo.ReplyMarkup = markUp
@@ -38,7 +50,7 @@ func (b *telegramBot) newMessage(message *models.Message, markUp any) *tgbotapi.
 }
 
 func (b *telegramBot) newChattable(message *models.Message, markup any) tgbotapi.Chattable {
-	if message.PhotoPath != nil {
+	if message.PhotoBytes != nil || message.PhotoPath != nil {
 		return b.newPhoto(message, markup)
 	}
 	return b.newMessage(message, markup)

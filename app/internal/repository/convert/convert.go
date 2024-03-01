@@ -10,7 +10,7 @@ func ToCommandFromRepo(cmd *repoModels.Command) *models.Command {
 	return &models.Command{
 		Id:       cmd.Id,
 		Name:     cmd.Name,
-		Action:   models.Action(cmd.Action),
+		ActionId: cmd.ActionId,
 		ParentId: cmd.ParentId,
 	}
 }

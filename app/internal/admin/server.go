@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"io"
 	"log"
 	"net/http"
 	"telegrambot_new_emploee/internal/config"
@@ -24,8 +25,10 @@ func StartServer() {
 	mux.HandleFunc("POST /questions", s.AnswerQuestion)
 
 	mux.HandleFunc("GET /commands", s.GetCommands)
-	mux.HandleFunc("PUT /commands", s.ChangeCommandMaterial)
+	mux.HandleFunc("PUT /commands", s.ChangeCommand)
 	mux.HandleFunc("POST /commands", s.AddCommand)
+
+	mux.HandleFunc("POST /send", s.SendMessage)
 
 	if err := http.ListenAndServe(config.Cfg.Admin.Port, mux); err != nil {
 		log.Println(err)
@@ -101,13 +104,13 @@ func (s *server) GetCommands(w http.ResponseWriter, _ *http.Request) {
 	sendMarshalledData(&commands, w)
 }
 
-func (s *server) ChangeCommandMaterial(w http.ResponseWriter, r *http.Request) {
-	req := unmarshalBody[UpdateMaterialRequest](w, r)
+func (s *server) ChangeCommand(w http.ResponseWriter, r *http.Request) {
+	req := unmarshalBody[UpdateCommandRequest](w, r)
 	if req == nil {
 		return
 	}
 
-	err := s.commandsService.UpdateMaterial(s.ctx, req)
+	err := s.commandsService.UpdateCommand(s.ctx, req)
 	if errors.Is(err, repository.ErrNoMaterial) {
 		w.WriteHeader(http.StatusBadRequest)
 		_, _ = w.Write([]byte("material does not exist"))
@@ -126,9 +129,59 @@ func (s *server) AddCommand(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	err := s.commandsService.AddCommand(s.ctx, req)
+	if errors.Is(err, repository.ErrTxFail) {
+		w.WriteHeader(http.StatusBadRequest)
+		_, _ =
+			w.Write([]byte("the command name is unique or action id is not found"))
+	}
 	if err != nil {
 		log.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
+	}
+}
+
+func NewSendMessageRequest(w http.ResponseWriter, r *http.Request) *SendMessageRequest {
+	var req SendMessageRequest
+
+	err := r.ParseMultipartForm(config.Cfg.Admin.MaxPhotoSize)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		_, _ = w.Write([]byte("can't process"))
+		return nil
+	}
+
+	// Read photo.
+	file, _, err := r.FormFile(config.Cfg.Admin.PhotoFormKey)
+	if err == nil {
+		req.Photo, err = io.ReadAll(file)
+		if err != nil {
+			log.Println(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return nil
+		}
+	}
+
+	// Read the message.
+	message := r.FormValue(config.Cfg.Admin.MessageFormKey)
+	if message == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		return nil
+	}
+	req.Message = message
+
+	return &req
+}
+
+func (s *server) SendMessage(w http.ResponseWriter, r *http.Request) {
+	req := NewSendMessageRequest(w, r)
+	if req == nil {
+		return
+	}
+
+	err := SendMessage(s.ctx, req)
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
 	}
 }

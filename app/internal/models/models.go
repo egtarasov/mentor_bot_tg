@@ -40,7 +40,7 @@ func IntToAction(i int) Action {
 type Command struct {
 	Id       int64
 	Name     string
-	Action   Action
+	ActionId int
 	ParentId int64
 }
 
@@ -69,9 +69,10 @@ type Task struct {
 }
 
 type Message struct {
-	PhotoPath *string
-	Message   string
-	ChatId    int64
+	PhotoPath  *string
+	PhotoBytes []byte
+	Message    string
+	ChatId     int64
 }
 
 type Button string
@@ -120,16 +121,28 @@ type CommandWithMaterial struct {
 
 func NewMessage(msg string, chatID int64) *Message {
 	return &Message{
-		Message: msg,
-		ChatId:  chatID,
+		PhotoPath:  nil,
+		PhotoBytes: nil,
+		Message:    msg,
+		ChatId:     chatID,
 	}
 }
 
-func NewMessageWithPhoto(msg string, chatID int64, photoPath *string) *Message {
+func NewMessageWithPhotoPath(msg string, chatID int64, photoPath *string) *Message {
 	return &Message{
-		PhotoPath: photoPath,
-		Message:   msg,
-		ChatId:    chatID,
+		PhotoPath:  photoPath,
+		PhotoBytes: nil,
+		Message:    msg,
+		ChatId:     chatID,
+	}
+}
+
+func NewMessageWithPhotoBytes(msg string, chatID int64, photoBytes []byte) *Message {
+	return &Message{
+		PhotoPath:  nil,
+		PhotoBytes: photoBytes,
+		Message:    msg,
+		ChatId:     chatID,
 	}
 }
 

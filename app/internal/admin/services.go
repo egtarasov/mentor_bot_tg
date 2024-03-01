@@ -3,6 +3,7 @@ package admin
 import (
 	"context"
 	"fmt"
+	"log"
 	container "telegrambot_new_emploee/internal/di-container"
 	"telegrambot_new_emploee/internal/models"
 	"telegrambot_new_emploee/internal/views"
@@ -78,8 +79,8 @@ func (s *CommandsService) GetCommands(ctx context.Context) ([]models.CommandWith
 	return commands, nil
 }
 
-func (s *CommandsService) UpdateMaterial(ctx context.Context, req *UpdateMaterialRequest) error {
-	return container.Container.CmdRepo().UpdateMaterial(ctx, &models.Material{
+func (s *CommandsService) UpdateCommand(ctx context.Context, req *UpdateCommandRequest) error {
+	return container.Container.CmdRepo().UpdateCommand(ctx, req.Name, &models.Material{
 		Message:   req.Message,
 		CommandId: req.CommandId,
 	})
@@ -91,9 +92,28 @@ func (s *CommandsService) AddCommand(ctx context.Context, req *AddCommandRequest
 			ctx,
 			&models.Command{
 				Name:     req.Name,
-				Action:   models.IntToAction(req.ActionId),
+				ActionId: req.ActionId,
 				ParentId: req.ParentId,
 			},
 			req.Message)
 	return err
+}
+
+func SendMessage(ctx context.Context, req *SendMessageRequest) error {
+	users, err := container.Container.UserRepo().GetUsersOnAdaptation(ctx)
+	if err != nil {
+		return err
+	}
+
+	message := models.NewMessageWithPhotoBytes(req.Message, -1, req.Photo)
+	for _, user := range users {
+		message.ChatId = user.TelegramId
+		err := container.Container.Bot().SendMessage(ctx, message)
+		if err != nil {
+			log.Println(err)
+			continue
+		}
+	}
+
+	return nil
 }

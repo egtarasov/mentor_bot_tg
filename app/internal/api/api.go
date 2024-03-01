@@ -172,7 +172,7 @@ func (a *app) processJob(job *commands.Job) {
 
 	var cmd commands.Cmd
 
-	switch job.Command.Action {
+	switch models.IntToAction(job.Command.ActionId) {
 	case models.GetDataCmd:
 		cmd = a.getCmd
 	case models.GetSubsectionsCmd:
@@ -188,7 +188,7 @@ func (a *app) processJob(job *commands.Job) {
 	if errors.Is(err, commands.ErrCanceled) {
 		_ = container.Container.Bot().SendMessage(a.ctx, models.NewMessage(CancelMessage, job.Update.ChatId))
 	} else if err != nil {
-		// TODO logging
+		log.Println(err)
 	}
 }
 

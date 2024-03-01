@@ -86,11 +86,9 @@ func NewCommandPostgres(pool *pgxpool.Pool) repository.CommandRepo {
 
 func (c *commandPostgres) GetCommand(ctx context.Context, command string) (*models.Command, error) {
 	var cmd repoModels.Command
-	query := `select c.id, c.name, a.action, c.parent_id
+	query := `select c.id, c.name, c.action_id, c.parent_id
 			  from public.commands c 
-			  join public.actions a 
-				on c.action_id = a.id
-				where c.name = $1`
+			  where c.name = $1`
 
 	err := pgxscan.Get(ctx, c.pool, &cmd, query, command)
 	if errors.As(err, &pgx.ErrNoRows) {
@@ -120,10 +118,10 @@ func (c *commandPostgres) GetMaterials(ctx context.Context, cmdId int64) (*model
 
 func (c *commandPostgres) GetCommands(ctx context.Context, parentId int64) ([]models.Command, error) {
 	commands := make([]repoModels.Command, 0)
-	query := `select c.id, c.name, a.action, c.parent_id 
+	query := `select c.id, c.name, c.action_id, c.parent_id 
 				from public.commands c
-				join public.actions a on c.action_id = a.id 
-				where parent_id = $1`
+				where parent_id = $1
+				order by c.id`
 	err := pgxscan.Select(ctx, c.pool, &commands, query, parentId)
 	if errors.As(err, &pgx.ErrNoRows) {
 		return nil, nil
@@ -167,12 +165,30 @@ func (c *commandPostgres) GetCommandsWithMaterials(ctx context.Context) ([]model
 	return convert.ToArray(commands, convert.ToCommandWithMaterialFromRepo), nil
 }
 
-func (c *commandPostgres) UpdateMaterial(ctx context.Context, material *models.Material) error {
-	query := `update materials
+func (c *commandPostgres) UpdateCommand(ctx context.Context, commandName string, material *models.Material) error {
+	tx, err := c.pool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+
+	// Update the command.
+	query := `update commands
+			  set name = case when $1 = '' then name else $1 end
+			  where id = $2`
+	res, err := tx.Exec(ctx, query, commandName, material.CommandId)
+	if err != nil {
+		return err
+	}
+	if res.RowsAffected() == 0 {
+		return repository.ErrNoCommand
+	}
+
+	// Update the material.
+	query = `update materials
 			  set message = case when $1 = '' then message else $1 end
 			  where command_id= $2;`
 
-	res, err := c.pool.Exec(ctx, query, material.Message, material.CommandId)
+	res, err = tx.Exec(ctx, query, material.Message, material.CommandId)
 	if err != nil {
 		return err
 	}
@@ -180,7 +196,7 @@ func (c *commandPostgres) UpdateMaterial(ctx context.Context, material *models.M
 		return repository.ErrNoMaterial
 	}
 
-	return nil
+	return tx.Commit(ctx)
 }
 
 func (c *commandPostgres) AddCommand(ctx context.Context, command *models.Command, message string) error {
@@ -194,7 +210,10 @@ func (c *commandPostgres) AddCommand(ctx context.Context, command *models.Comman
 			  values ($1, $2, $3) returning id`
 
 	var id int64
-	err = tx.QueryRow(ctx, query, command.Name, command.Id, command.ParentId).Scan(&id)
+	err = tx.QueryRow(ctx, query, command.Name, command.ActionId, command.ParentId).Scan(&id)
+	if errors.As(err, &pgx.ErrTxInFailure) {
+		return repository.ErrTxFail
+	}
 	if err != nil {
 		return err
 	}
@@ -204,7 +223,10 @@ func (c *commandPostgres) AddCommand(ctx context.Context, command *models.Comman
 			 values ($1, $2)`
 
 	_, err = tx.Exec(ctx, query, message, id)
-	return nil
+	if err != nil {
+		return err
+	}
+	return tx.Commit(ctx)
 }
 
 type tasksPostgres struct {
@@ -236,7 +258,9 @@ func (t *tasksPostgres) GetTasksById(ctx context.Context, employeeId int64) ([]m
 
 func (t *tasksPostgres) GetTodoListById(ctx context.Context, employeeId int64) ([]models.Todo, error) {
 	var todos []repoModels.Todo
-	query := `select id, label, priority, employee_id, completed from todo_list where employee_id = $1`
+	query := `select id, label, priority, employee_id, completed from todo_list
+        	  where employee_id = $1
+        	  order by priority`
 
 	err := pgxscan.Select(ctx, t.pool, &todos, query, employeeId)
 	if errors.As(err, &pgx.ErrNoRows) {

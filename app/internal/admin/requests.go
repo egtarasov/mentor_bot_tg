@@ -5,8 +5,9 @@ type AnswerQuestionRequest struct {
 	Answer     string `json:"answer"`
 }
 
-type UpdateMaterialRequest struct {
+type UpdateCommandRequest struct {
 	CommandId int64  `json:"command_id"`
+	Name      string `json:"name"`
 	Message   string `json:"message"`
 }
 
@@ -15,4 +16,9 @@ type AddCommandRequest struct {
 	Name     string `json:"name"`
 	Message  string `json:"message"`
 	ActionId int    `json:"action_id"`
+}
+
+type SendMessageRequest struct {
+	Photo   []byte
+	Message string
 }

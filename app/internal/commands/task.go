@@ -2,7 +2,7 @@ package commands
 
 import (
 	"context"
-	"sort"
+	"telegrambot_new_emploee/internal/convert"
 	container "telegrambot_new_emploee/internal/di-container"
 	"telegrambot_new_emploee/internal/models"
 	"telegrambot_new_emploee/internal/views"
@@ -17,33 +17,21 @@ func NewShowTodoListCmd() Cmd {
 
 func (c *showTodoListCmd) Execute(ctx context.Context, job *Job) error {
 	// Get user's uncompleted todos.
-	todos, err := getUncompletedTodo(ctx, job.User.Id)
+	todos, err := container.Container.TaskRepo().GetTodoListById(ctx, job.User.Id)
 	if err != nil {
 		return err
 	}
 
 	// Show the user their uncompleted todos.
-	return container.Container.Bot().SendMessage(ctx, views.ShowTodo(todos, job.GetChatId()))
-}
-
-func getUncompletedTodo(ctx context.Context, userId int64) ([]models.Todo, error) {
-	todos, err := container.Container.TaskRepo().GetTodoListById(ctx, userId)
-	if err != nil {
-		return nil, err
-	}
-	uncompletedTodos := make([]models.Todo, 0, len(todos))
-	for _, todo := range todos {
-		if todo.Completed {
-			continue
-		}
-		uncompletedTodos = append(uncompletedTodos, todo)
-	}
-
-	sort.Slice(uncompletedTodos, func(i, j int) bool {
-		return todos[i].Priority > todos[j].Priority
-	})
-
-	return uncompletedTodos, nil
+	return container.Container.Bot().
+		SendMessage(
+			ctx,
+			views.GetTodo(
+				convert.UncompletedTodo(todos),
+				job.User,
+				len(todos),
+			),
+		)
 }
 
 type checkTodoCmd struct {
@@ -55,13 +43,14 @@ func NewCheckTodoCmd() Cmd {
 
 func (c *checkTodoCmd) Execute(ctx context.Context, job *Job) error {
 	// Get user's uncompleted todos.
-	todos, err := getUncompletedTodo(ctx, job.User.Id)
+	todos, err := container.Container.TaskRepo().GetTodoListById(ctx, job.User.Id)
 	if err != nil {
 		return err
 	}
+	uncompletedTodos := convert.UncompletedTodo(todos)
 
 	// Ask the user for a button.
-	err = container.Container.Bot().SendMessage(ctx, views.CheckTodo(todos, job.GetChatId()))
+	err = container.Container.Bot().SendMessage(ctx, views.CheckTodo(uncompletedTodos, job.GetChatId()))
 	if err != nil {
 		return err
 	}
@@ -106,11 +95,11 @@ func NewShowTasksCmd() Cmd {
 }
 
 func (c *showTasksCmd) Execute(ctx context.Context, job *Job) error {
-	tasks, err := getUncompletedTask(ctx, job.User.Id)
+	tasks, err := container.Container.TaskRepo().GetTasksById(ctx, job.User.Id)
 	if err != nil {
 		return err
 	}
-	return container.Container.Bot().SendMessage(ctx, views.GetTasks(tasks, job.GetChatId()))
+	return container.Container.Bot().SendMessage(ctx, views.GetTasks(tasks, job.User))
 }
 
 func getUncompletedTask(ctx context.Context, userId int64) ([]models.Task, error) {

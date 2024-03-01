@@ -52,7 +52,7 @@ func sendFeedbackForm(ctx context.Context, user *models.User) error {
 	return container.Container.Bot().
 		SendMessage(
 			ctx,
-			models.NewMessageWithPhoto(
+			models.NewMessageWithPhotoPath(
 				views.FeedBackForm(config.Cfg.Feedback.Form),
 				user.TelegramId,
 				config.Cfg.Feedback.PhotoPath,

@@ -16,7 +16,10 @@ type Config struct {
 }
 
 type AdminConfig struct {
-	Port string
+	Port           string
+	MaxPhotoSize   int64
+	PhotoFormKey   string
+	MessageFormKey string
 }
 
 type FeedBackConfig struct {
@@ -29,6 +32,7 @@ type TasksConfig struct {
 	PhotoPathGoals *string
 	PhotoPathTasks *string
 	PhotoPathTodos *string
+	BarCount       int
 }
 
 var Cfg *Config
@@ -45,7 +49,10 @@ type yamlConfig struct {
 }
 
 type adminConfig struct {
-	Port string `yaml:"port"`
+	Port           string `yaml:"port"`
+	MaxPhotoSize   int64  `yaml:"max_photo_size"`
+	PhotoFormKey   string `yaml:"photo_form_key"`
+	MessageFormKey string `yaml:"message_form_key"`
 }
 
 type feedbackConfig struct {
@@ -58,10 +65,15 @@ type tasksConfig struct {
 	PhotoPathGoals *string `yaml:"photo_path_goals"`
 	PhotoPathTasks *string `yaml:"photo_path_tasks"`
 	PhotoPathTodos *string `yaml:"photo_path_todos"`
+	BarCount       int     `yaml:"bar_count"`
 }
 
 func weeks(n int) time.Duration {
 	return time.Duration(n) * 24 * 7 * time.Hour
+}
+
+func toMegabytes(n int64) int64 {
+	return n << 32
 }
 
 func loadYamlConfig() (cfg *yamlConfig, err error) {
@@ -107,9 +119,13 @@ func NewConfig() error {
 			PhotoPathGoals: cfg.Tasks.PhotoPathGoals,
 			PhotoPathTasks: cfg.Tasks.PhotoPathTasks,
 			PhotoPathTodos: cfg.Tasks.PhotoPathTodos,
+			BarCount:       cfg.Tasks.BarCount,
 		},
 		Admin: AdminConfig{
-			Port: cfg.Admin.Port,
+			Port:           cfg.Admin.Port,
+			MaxPhotoSize:   toMegabytes(cfg.Admin.MaxPhotoSize),
+			PhotoFormKey:   cfg.Admin.PhotoFormKey,
+			MessageFormKey: cfg.Admin.MessageFormKey,
 		},
 	}
 

@@ -2,6 +2,7 @@ package commands
 
 import (
 	"context"
+	"strings"
 	container "telegrambot_new_emploee/internal/di-container"
 	"telegrambot_new_emploee/internal/models"
 	"telegrambot_new_emploee/internal/views"
@@ -25,7 +26,7 @@ func (c *askQuestionCmd) Execute(ctx context.Context, job *Job) error {
 	if err != nil {
 		return err
 	}
-	if question == CancelMessage {
+	if strings.ToLower(question) == CancelMessage {
 		return ErrCanceled
 	}
 
