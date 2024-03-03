@@ -12,7 +12,7 @@ func GetTodo(uncompletedTodos []models.Todo, user *models.User, total int) *mode
 	var msg strings.Builder
 	msg.WriteString("*Чек-лист*\n\n")
 
-	percentage := float64(len(uncompletedTodos)) / float64(total)
+	percentage := float64(total-len(uncompletedTodos)) / float64(total)
 
 	listTodo(uncompletedTodos, &msg)
 	msg.WriteString("\n\n")
