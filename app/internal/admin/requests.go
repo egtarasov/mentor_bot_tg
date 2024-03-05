@@ -12,7 +12,7 @@ type UpdateCommandRequest struct {
 }
 
 type AddCommandRequest struct {
-	ParentId int64  `json:"parent_id"`
+	ParentId *int64 `json:"parent_id"`
 	Name     string `json:"name"`
 	Message  string `json:"message"`
 	ActionId int    `json:"action_id"`

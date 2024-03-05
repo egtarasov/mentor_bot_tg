@@ -41,7 +41,7 @@ type Command struct {
 	Id       int64
 	Name     string
 	ActionId int
-	ParentId int64
+	ParentId *int64
 }
 
 type Todo struct {

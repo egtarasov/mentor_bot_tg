@@ -9,7 +9,7 @@ type Command struct {
 	Id       int64  `db:"id"`
 	Name     string `db:"name"`
 	ActionId int    `db:"action_id"`
-	ParentId int64  `db:"parent_id"`
+	ParentId *int64 `db:"parent_id"`
 }
 
 type Material struct {

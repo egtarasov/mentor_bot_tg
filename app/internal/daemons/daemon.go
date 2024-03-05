@@ -2,6 +2,7 @@ package daemons
 
 import (
 	"context"
+	"log"
 	"time"
 )
 
@@ -10,6 +11,7 @@ type daemon interface {
 }
 
 func startDaemon(ctx context.Context, duration time.Duration, daemon daemon) {
+	log.Println("Start the daemon!")
 	err := daemon.start(ctx)
 	if err != nil {
 		// TODO Log error
