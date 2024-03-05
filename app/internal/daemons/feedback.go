@@ -6,36 +6,16 @@ import (
 	container "telegrambot_new_emploee/internal/di-container"
 	"telegrambot_new_emploee/internal/models"
 	"telegrambot_new_emploee/internal/views"
-	"time"
 )
 
+type feedbackDaemon struct {
+}
+
 func NewFeedbackDaemon(ctx context.Context) {
-	startDaemon(ctx, config.Cfg.Feedback.Duration, feedback)
+	startDaemon(ctx, config.Cfg.Feedback.Duration, &feedbackDaemon{})
 }
 
-type daemonWork func(ctx context.Context) error
-
-func startDaemon(ctx context.Context, duration time.Duration, work daemonWork) {
-	err := work(ctx)
-	if err != nil {
-		// TODO Log error
-	}
-	ticker := time.NewTicker(duration)
-	for {
-		select {
-		// TODO graceful shutdown.
-		case <-ctx.Done():
-			return
-		case <-ticker.C:
-			err := work(ctx)
-			if err != nil {
-				// TODO Log error
-			}
-		}
-	}
-}
-
-func feedback(ctx context.Context) error {
+func (f *feedbackDaemon) start(ctx context.Context) error {
 	users, err := container.Container.UserRepo().GetUsersOnAdaptation(ctx)
 	if err != nil {
 		return err

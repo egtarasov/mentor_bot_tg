@@ -7,12 +7,47 @@ import (
 	"time"
 )
 
+func parseDayOfWeek(day string) int {
+	dayToInt := map[string]int{
+		"Mon": 1,
+		"Tue": 2,
+		"Wed": 3,
+		"Thu": 4,
+		"Fri": 5,
+		"Sat": 6,
+		"Sun": 7,
+	}
+
+	dayOfWeek, ok := dayToInt[day]
+	if !ok {
+		panic(fmt.Sprintf("invalid day of the week in configuration: [%s]", day))
+	}
+	return dayOfWeek
+}
+
 type Config struct {
-	ConnStr  string
-	TgToken  string
-	Feedback FeedBackConfig
-	Tasks    TasksConfig
-	Admin    AdminConfig
+	ConnStr       string
+	TgToken       string
+	Feedback      FeedBackConfig
+	Tasks         TasksConfig
+	Admin         AdminConfig
+	Notifications NotificationsConfig
+}
+
+type NotificationsConfig struct {
+	PhotoPath *string
+
+	TrainingRepeat    time.Duration
+	TrainingDayOfWeek int
+	TrainingHour      int
+
+	HrMeetupRepeat    time.Duration
+	HrMeetupDayOfWeek int
+	HrMeetupHour      int
+
+	MentorMeetupRepeat    time.Duration
+	MentorMeetupDayOfWeek int
+	MentorMeetupHour      int
 }
 
 type AdminConfig struct {
@@ -43,9 +78,26 @@ const (
 
 // Yaml configuration.
 type yamlConfig struct {
-	Feedback feedbackConfig `yaml:"feedback"`
-	Tasks    tasksConfig    `yaml:"tasks"`
-	Admin    adminConfig    `yaml:"admin"`
+	Feedback      feedbackConfig     `yaml:"feedback"`
+	Tasks         tasksConfig        `yaml:"tasks"`
+	Admin         adminConfig        `yaml:"admin"`
+	Notifications notificationConfig `yaml:"notifications"`
+}
+
+type notificationConfig struct {
+	PhotoPath *string `yaml:"photo_path"`
+
+	TrainingRepeat    int    `yaml:"training_repeat"`
+	TrainingDayOfWeek string `yaml:"training_day_of_week"`
+	TrainingHour      int    `yaml:"training_hour"`
+
+	HrMeetupRepeat    int    `yaml:"hr_meetup_repeat"`
+	HrMeetupDayOfWeek string `yaml:"hr_meetup_day_of_week"`
+	HrMeetupHour      int    `yaml:"hr_meetup_hour"`
+
+	MentorMeetupRepeat    int    `yaml:"mentor_meetup_repeat"`
+	MentorMeetupDayOfWeek string `yaml:"mentor_meetup_day_of_week"`
+	MentorMeetupHour      int    `yaml:"mentor_meetup_hour"`
 }
 
 type adminConfig struct {
@@ -126,6 +178,18 @@ func NewConfig() error {
 			MaxPhotoSize:   toMegabytes(cfg.Admin.MaxPhotoSize),
 			PhotoFormKey:   cfg.Admin.PhotoFormKey,
 			MessageFormKey: cfg.Admin.MessageFormKey,
+		},
+		Notifications: NotificationsConfig{
+			PhotoPath:             cfg.Notifications.PhotoPath,
+			TrainingRepeat:        weeks(cfg.Notifications.TrainingRepeat),
+			TrainingDayOfWeek:     parseDayOfWeek(cfg.Notifications.TrainingDayOfWeek),
+			TrainingHour:          cfg.Notifications.TrainingHour,
+			HrMeetupRepeat:        weeks(cfg.Notifications.HrMeetupRepeat),
+			HrMeetupDayOfWeek:     parseDayOfWeek(cfg.Notifications.HrMeetupDayOfWeek),
+			HrMeetupHour:          cfg.Notifications.HrMeetupHour,
+			MentorMeetupRepeat:    weeks(cfg.Notifications.MentorMeetupRepeat),
+			MentorMeetupDayOfWeek: parseDayOfWeek(cfg.Notifications.MentorMeetupDayOfWeek),
+			MentorMeetupHour:      cfg.Notifications.MentorMeetupHour,
 		},
 	}
 
