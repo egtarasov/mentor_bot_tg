@@ -32,6 +32,7 @@ type Config struct {
 	Tasks         TasksConfig
 	Admin         AdminConfig
 	Notifications NotificationsConfig
+	CalendarUrl   *string
 }
 
 type NotificationsConfig struct {
@@ -82,6 +83,11 @@ type yamlConfig struct {
 	Tasks         tasksConfig        `yaml:"tasks"`
 	Admin         adminConfig        `yaml:"admin"`
 	Notifications notificationConfig `yaml:"notifications"`
+	Calendar      calendarConfig     `yaml:"calendar"`
+}
+
+type calendarConfig struct {
+	Url *string `yaml:"url"`
 }
 
 type notificationConfig struct {
@@ -191,6 +197,7 @@ func NewConfig() error {
 			MentorMeetupDayOfWeek: parseDayOfWeek(cfg.Notifications.MentorMeetupDayOfWeek),
 			MentorMeetupHour:      cfg.Notifications.MentorMeetupHour,
 		},
+		CalendarUrl: cfg.Calendar.Url,
 	}
 
 	return nil

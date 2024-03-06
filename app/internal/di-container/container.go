@@ -4,9 +4,11 @@ import (
 	"context"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"telegrambot_new_emploee/internal/bot"
+	"telegrambot_new_emploee/internal/calendar"
 	"telegrambot_new_emploee/internal/config"
 	"telegrambot_new_emploee/internal/repository"
 	"telegrambot_new_emploee/internal/repository/postgres"
+	"time"
 )
 
 var Container *DiContainer
@@ -16,7 +18,10 @@ type DiContainer struct {
 	cmdRepo      repository.CommandRepo
 	taskRepo     repository.TasksRepo
 	questionRepo repository.QuestionRepo
-	bot          bot.Bot
+
+	calendar calendar.Calendar
+
+	bot bot.Bot
 
 	pool *pgxpool.Pool
 }
@@ -74,4 +79,12 @@ func (c *DiContainer) QuestionRepo() repository.QuestionRepo {
 	}
 
 	return c.questionRepo
+}
+
+func (c *DiContainer) Calendar() calendar.Calendar {
+	if c.calendar == nil && config.Cfg.CalendarUrl != nil {
+		c.calendar = calendar.NewCalendar(*config.Cfg.CalendarUrl, time.Second)
+	}
+
+	return c.calendar
 }

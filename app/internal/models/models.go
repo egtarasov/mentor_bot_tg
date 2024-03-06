@@ -119,6 +119,12 @@ type CommandWithMaterial struct {
 	ActionId int64
 }
 
+type Meeting struct {
+	Name        string        `json:"name"`
+	Description string        `json:"description"`
+	StartTime   time.Duration `json:"start_time"`
+}
+
 func NewMessage(msg string, chatID int64) *Message {
 	return &Message{
 		PhotoPath:  nil,

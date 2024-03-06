@@ -39,3 +39,22 @@ func (c *askQuestionCmd) Execute(ctx context.Context, job *Job) error {
 	return container.Container.Bot().
 		SendMessage(ctx, views.AskQuestionSuccess(id, question, job.GetChatId()))
 }
+
+type calendarCmd struct {
+}
+
+func NewCalendarCmd() Cmd {
+	return &calendarCmd{}
+}
+
+func (c *calendarCmd) Execute(ctx context.Context, job *Job) error {
+	meetings, err := container.Container.Calendar().GetMeetingsById(job.User)
+	if err != nil {
+		return err
+	}
+
+	return container.Container.Bot().SendMessage(
+		ctx,
+		views.CalendarMessage(meetings, job.GetChatId()),
+	)
+}

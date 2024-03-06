@@ -73,6 +73,9 @@ func addCommands(app *app) {
 		{key: "Показать задачт", cmd: commands.NewShowTasksCmd()},
 		{key: "Полезные матерьялы для меня", cmd: commands.NewOccupationMaterialCmd()},
 	}
+	if config.Cfg.CalendarUrl != nil {
+		app.complexCmd["Календарь"] = commands.NewCalendarCmd()
+	}
 
 	for _, node := range complexCmd {
 		app.complexCmd[node.key] = node.cmd
@@ -160,7 +163,7 @@ func (a *app) processQueue(queue updates.Queue, user *models.User) {
 		if !ok {
 			_ = container.Container.Bot().SendMessage(
 				a.ctx, models.NewMessage(
-					"Unknown command", update.ChatId))
+					"Такой комманды нету :(", update.ChatId))
 			continue
 		}
 
@@ -191,6 +194,8 @@ func (a *app) processJob(job *commands.Job) {
 	if errors.Is(err, commands.ErrCanceled) {
 		_ = container.Container.Bot().SendMessage(a.ctx, models.NewMessage(CancelMessage, job.Update.ChatId))
 	} else if err != nil {
+		_ = container.Container.Bot().SendMessage(a.ctx, models.NewMessage("Простите, что-то пошло не так :(",
+			job.Update.ChatId))
 		log.Println(err)
 	}
 }

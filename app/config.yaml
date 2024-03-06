@@ -31,3 +31,6 @@ tasks:
   photo_path_tasks: "./images/tasks.jpg"
   photo_path_todos: "./images/todos.jpg"
   bar_count: 10
+
+calendar:
+  url: "http://localhost:8000/calendar"
