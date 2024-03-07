@@ -75,6 +75,10 @@ type Message struct {
 	ChatId     int64
 }
 
+func (m *Message) FilePath() string {
+	return *m.PhotoPath
+}
+
 type Button string
 
 type Buttons struct {
