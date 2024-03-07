@@ -119,7 +119,9 @@ func (a *app) run() {
 
 func (a *app) changeUpdate(update *models.Update) {
 	commandsSubstitutions := map[string]string{
-		"В меню": "/start",
+		"В меню":    "/start",
+		"/ask":      AskQuestionCmd,
+		"/calendar": CalendarCmd,
 	}
 	if val, ok := commandsSubstitutions[update.Message]; ok {
 		update.Message = val
