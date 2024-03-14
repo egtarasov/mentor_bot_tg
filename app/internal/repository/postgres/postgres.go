@@ -330,7 +330,7 @@ func (q *questionsPostgres) CreateQuestion(ctx context.Context, question *models
 func (q *questionsPostgres) GetUnansweredQuestions(ctx context.Context) ([]models.Question, error) {
 	var questions []repoModels.Question
 	query := `select id, text, user_id, created_at, answered_at, answered_by, answer
-			  from questions where answered_by is null
+			  from questions where answered_at is null
 			  order by created_at`
 
 	err := pgxscan.Select(ctx, q.pool, &questions, query)

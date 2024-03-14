@@ -135,7 +135,6 @@ func (a *app) processUpdate(update *models.Update) {
 	// Authenticate the user.
 	user := a.authenticate(update)
 	if user == nil {
-		// TODO return the message that user is unknown.
 		_ = container.Container.Bot().
 			SendMessage(a.ctx,
 				models.NewMessage("Ой, ой! Кажется, вы не являетесь сотрудником!", update.ChatId))

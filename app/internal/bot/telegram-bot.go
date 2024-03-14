@@ -140,11 +140,11 @@ func (b *telegramBot) SendButtons(ctx context.Context, buttons *models.Buttons) 
 func (b *telegramBot) send(message *models.Message, markup any) error {
 	msg, ok := b.newChattable(message, markup)
 	m, err := b.bot.Send(msg)
-	if !ok {
-		b.storeFileId(message.FilePath(), getFileId(&m))
-	}
 	if err != nil {
 		return ErrMessageSend
+	}
+	if !ok {
+		b.storeFileId(message.FilePath(), getFileId(&m))
 	}
 	return nil
 }
