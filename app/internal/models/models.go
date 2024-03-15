@@ -16,6 +16,8 @@ type User struct {
 	TelegramId     int64
 	Name           string
 	OccupationId   int64
+	Grade          int
+	IsAdmin        bool
 	StartWork      time.Time
 	AdaptationEnds time.Time
 }
@@ -42,6 +44,7 @@ type Command struct {
 	Name     string
 	ActionId int
 	ParentId *int64
+	IsAdmin  bool
 }
 
 type Todo struct {

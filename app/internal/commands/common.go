@@ -56,7 +56,7 @@ func (c *subDirCmd) Execute(ctx context.Context, job *Job) error {
 		return err
 	}
 
-	buttons := convert.ToButtons(commands, convert.DefaultToButtonsCfg(material.Message, job.GetChatId()))
+	buttons := convert.CommandsToButtons(commands, convert.DefaultToButtonsCfg(material.Message, job.GetChatId()))
 	buttons.Message.PhotoPath = photoPath
 
 	return container.Container.Bot().SendButtons(ctx, buttons)

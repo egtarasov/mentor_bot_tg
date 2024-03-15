@@ -11,6 +11,7 @@ CREATE TABLE commands (
     id BIGSERIAL PRIMARY KEY,
     name varchar(100) NOT NULL UNIQUE,
     action_id BIGINT REFERENCES actions(id),
+    is_admin          BOOLEAN               DEFAULT FALSE NOT NULL,
     parent_id BIGINT DEFAULT NULL
 );
 
@@ -20,12 +21,15 @@ CREATE TABLE occupations (
     material VARCHAR(4096) NOT NULL
 );
 
-CREATE TABLE employees(
+CREATE TABLE employees
+(
     id                BIGSERIAL PRIMARY KEY,
     name              VARCHAR(100) NOT NULL,
     surname           VARCHAR(100)          DEFAULT NULL,
     telegram_id       BIGINT       NOT NULL UNIQUE,
     occupation_id     BIGINT REFERENCES occupations (id),
+    grade             INT                   DEFAULT 17 NOT NULL,
+    is_admin          BOOLEAN               DEFAULT FALSE NOT NULL,
     first_working_day date         NOT NULL DEFAULT NOW(),
     adaptation_end_at date         NOT NULL DEFAULT CURRENT_DATE + 90
 );

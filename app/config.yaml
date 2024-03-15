@@ -5,6 +5,7 @@ admin:
   max_photo_size: 32 # Mb
   photo_form_key: "photo"
   message_form_key: "message"
+  faq_command_name: "FAQ"
 
 feedback:
   form: "https://best-company.com/feedback"

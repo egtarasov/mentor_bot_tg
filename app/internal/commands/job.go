@@ -45,6 +45,9 @@ func (j *Job) getCommand() bool {
 		// TODO logging
 		return false
 	}
+	if command.IsAdmin && !j.User.IsAdmin {
+		return false
+	}
 
 	j.Command = command
 

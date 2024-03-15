@@ -1,8 +1,9 @@
-package admin
+package services
 
 type AnswerQuestionRequest struct {
-	QuestionId int64  `json:"question_id"`
-	Answer     string `json:"answer"`
+	QuestionId  int64  `json:"question_id"`
+	Answer      string `json:"answer"`
+	ResponderId int64  `json:"user_id"`
 }
 
 type UpdateCommandRequest struct {

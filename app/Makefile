@@ -5,7 +5,7 @@ migration-up:
 	goose -dir ./migrations postgres "${POSTGRES_SETUP_TEST}" up
 
 migration-down:
-	goose -dir ./migrations postgres "${POSTGRES_SETUP_TEST}" down
+	goose -dir ./migrations postgres "${POSTGRES_SETUP_TEST}" reset
 
 
 build:

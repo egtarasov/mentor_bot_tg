@@ -1,4 +1,4 @@
-package admin
+package services
 
 import (
 	"context"
@@ -46,6 +46,7 @@ func (s *QuestionService) AnswerQuestion(ctx context.Context, req *AnswerQuestio
 		return ErrQuestionAnswered
 	}
 	question.Answer = &req.Answer
+	question.AnsweredBy = &req.ResponderId
 
 	// Get the user, who asked the question.
 	user, err := container.Container.UserRepo().GetUserById(ctx, question.UserId)

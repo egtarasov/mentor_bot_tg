@@ -3,9 +3,11 @@ package postgres
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/jackc/pgx"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"telegrambot_new_emploee/internal/config"
 	"telegrambot_new_emploee/internal/models"
 	"telegrambot_new_emploee/internal/repository"
 	"telegrambot_new_emploee/internal/repository/convert"
@@ -22,10 +24,35 @@ func NewUserPostgres(pool *pgxpool.Pool) repository.UserRepo {
 	}
 }
 
+func (a *userPostgres) AddTasks(ctx context.Context, tasks *repository.AddTasks) error {
+	tx, err := a.pool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+
+	for _, task := range tasks.Tasks {
+		_, err := tx.Exec(ctx, `insert into tasks (name, description, story_points, employee_id) values ($1, $2, $3, $4)`,
+			task.Name, task.Description, task.StoryPoints, tasks.EmployeeId)
+		if err != nil {
+			return err
+		}
+	}
+
+	for _, todo := range tasks.Todos {
+		_, err := tx.Exec(ctx, `insert into todo_list (label, employee_id) values ($1, $2)`, todo, tasks.EmployeeId)
+		if err != nil {
+			return err
+		}
+	}
+
+	return tx.Commit(ctx)
+}
+
 func (a *userPostgres) GetUserById(ctx context.Context, userId int64) (*models.User, error) {
 	var user repoModels.User
 	query := `select 
-    			id, name, surname, telegram_id, occupation_id, first_working_day, adaptation_end_at 
+    			id, name, surname, telegram_id, occupation_id, first_working_day, adaptation_end_at, is_admin, grade
 				from employees where id = $1`
 
 	err := pgxscan.Get(ctx, a.pool, &user, query, userId)
@@ -42,7 +69,7 @@ func (a *userPostgres) GetUserById(ctx context.Context, userId int64) (*models.U
 func (a *userPostgres) GetUserByTag(ctx context.Context, tag int64) (*models.User, error) {
 	var user repoModels.User
 	query := `select 
-    			id, name, surname, telegram_id, occupation_id, first_working_day, adaptation_end_at 
+    			id, name, surname, telegram_id, occupation_id, first_working_day, adaptation_end_at, is_admin, grade 
 				from employees where telegram_id = $1`
 
 	err := pgxscan.Get(ctx, a.pool, &user, query, tag)
@@ -86,7 +113,7 @@ func NewCommandPostgres(pool *pgxpool.Pool) repository.CommandRepo {
 
 func (c *commandPostgres) GetCommand(ctx context.Context, command string) (*models.Command, error) {
 	var cmd repoModels.Command
-	query := `select c.id, c.name, c.action_id, c.parent_id
+	query := `select c.id, c.name, c.action_id, c.parent_id, c.is_admin
 			  from public.commands c 
 			  where c.name = $1`
 
@@ -383,4 +410,51 @@ func (q *questionsPostgres) GetQuestionById(ctx context.Context, questionId int6
 	}
 
 	return convert.ToQuestionFromRepo(&question), nil
+}
+
+type faqPostgres struct {
+	pool        *pgxpool.Pool
+	commandRepo repository.CommandRepo
+}
+
+func NewFAQPostgres(pool *pgxpool.Pool, repo repository.CommandRepo) repository.FAQRepository {
+	return &faqPostgres{pool: pool, commandRepo: repo}
+}
+
+func (f *faqPostgres) GetFAQSections(ctx context.Context) ([]string, error) {
+	var sections []string
+	query := `select name from commands
+			  where parent_id = (select id from commands where name = $1)`
+
+	err := pgxscan.Select(ctx, f.pool, &sections, query, config.Cfg.Admin.FAQCommandName)
+	if err != nil {
+		return nil, err
+	}
+	return sections, nil
+}
+
+func (f *faqPostgres) UpdateFAQ(ctx context.Context, faq *repository.UpdateFaq) error {
+	command, err := f.commandRepo.GetCommand(ctx, faq.SectionName)
+	if err != nil {
+		return err
+	}
+	tx, err := f.pool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+
+	var message string
+	err = pgxscan.Get(ctx, tx, &message, `select message from materials where command_id = $1`, command.Id)
+	if err != nil {
+		return err
+	}
+
+	message += fmt.Sprintf("\n\nQ: *%s*\nA: %s", faq.Question, faq.Answer)
+	_, err = tx.Exec(ctx, `update materials set message = $1 where command_id = $2`, message, command.Id)
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit(ctx)
 }

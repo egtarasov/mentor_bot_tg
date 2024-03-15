@@ -8,7 +8,9 @@ import (
 	"log"
 	"net/http"
 	"telegrambot_new_emploee/internal/config"
+	container "telegrambot_new_emploee/internal/di-container"
 	"telegrambot_new_emploee/internal/repository"
+	"telegrambot_new_emploee/internal/services"
 )
 
 var TempId int64 = 1
@@ -17,8 +19,8 @@ func StartServer() {
 	mux := http.NewServeMux()
 	s := server{
 		ctx:             context.Background(),
-		questionService: NewQuestionService(),
-		commandsService: NewCommandsService(),
+		questionService: services.NewQuestionService(),
+		commandsService: services.NewCommandsService(),
 	}
 
 	mux.HandleFunc("GET /questions", s.GetRequestsHandler)
@@ -29,6 +31,7 @@ func StartServer() {
 	mux.HandleFunc("POST /commands", s.AddCommand)
 
 	mux.HandleFunc("POST /send", s.SendMessage)
+	mux.HandleFunc("POST /add/employee", s.AddEmployee)
 
 	if err := http.ListenAndServe(config.Cfg.Admin.Port, mux); err != nil {
 		log.Println(err)
@@ -37,8 +40,8 @@ func StartServer() {
 
 type server struct {
 	ctx             context.Context
-	questionService *QuestionService
-	commandsService *CommandsService
+	questionService *services.QuestionService
+	commandsService *services.CommandsService
 }
 
 func sendMarshalledData[T any](obj *T, w http.ResponseWriter) {
@@ -64,6 +67,14 @@ func unmarshalBody[T any](w http.ResponseWriter, r *http.Request) *T {
 	return &req
 }
 
+func (s *server) AddEmployee(w http.ResponseWriter, r *http.Request) {
+	req := unmarshalBody[repository.AddTasks](w, r)
+	err := container.Container.UserRepo().AddTasks(s.ctx, req)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+}
+
 func (s *server) GetRequestsHandler(w http.ResponseWriter, _ *http.Request) {
 	questions, err := s.questionService.GetQuestions(s.ctx)
 	if err != nil {
@@ -75,7 +86,7 @@ func (s *server) GetRequestsHandler(w http.ResponseWriter, _ *http.Request) {
 }
 
 func (s *server) AnswerQuestion(w http.ResponseWriter, r *http.Request) {
-	req := unmarshalBody[AnswerQuestionRequest](w, r)
+	req := unmarshalBody[services.AnswerQuestionRequest](w, r)
 	if req == nil {
 		return
 	}
@@ -105,7 +116,7 @@ func (s *server) GetCommands(w http.ResponseWriter, _ *http.Request) {
 }
 
 func (s *server) ChangeCommand(w http.ResponseWriter, r *http.Request) {
-	req := unmarshalBody[UpdateCommandRequest](w, r)
+	req := unmarshalBody[services.UpdateCommandRequest](w, r)
 	if req == nil {
 		return
 	}
@@ -124,7 +135,7 @@ func (s *server) ChangeCommand(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) AddCommand(w http.ResponseWriter, r *http.Request) {
-	req := unmarshalBody[AddCommandRequest](w, r)
+	req := unmarshalBody[services.AddCommandRequest](w, r)
 	if req == nil {
 		return
 	}
@@ -141,8 +152,8 @@ func (s *server) AddCommand(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func NewSendMessageRequest(w http.ResponseWriter, r *http.Request) *SendMessageRequest {
-	var req SendMessageRequest
+func NewSendMessageRequest(w http.ResponseWriter, r *http.Request) *services.SendMessageRequest {
+	var req services.SendMessageRequest
 
 	err := r.ParseMultipartForm(config.Cfg.Admin.MaxPhotoSize)
 	if err != nil {
@@ -179,7 +190,7 @@ func (s *server) SendMessage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := SendMessage(s.ctx, req)
+	err := services.SendMessage(s.ctx, req)
 	if err != nil {
 		log.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)

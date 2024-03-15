@@ -10,6 +10,7 @@ type Command struct {
 	Name     string `db:"name"`
 	ActionId int    `db:"action_id"`
 	ParentId *int64 `db:"parent_id"`
+	IsAdmin  bool   `db:"is_admin"`
 }
 
 type Material struct {
@@ -42,6 +43,8 @@ type User struct {
 	Surname        string    `db:"surname"`
 	TelegramId     int64     `db:"telegram_id"`
 	OccupationId   int64     `db:"occupation_id"`
+	IsAdmin        bool      `db:"is_admin"`
+	Grade          int       `db:"grade"`
 	StartWork      time.Time `db:"first_working_day"`
 	AdaptationEnds time.Time `db:"adaptation_end_at"`
 }

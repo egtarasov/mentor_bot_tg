@@ -18,6 +18,7 @@ type DiContainer struct {
 	cmdRepo      repository.CommandRepo
 	taskRepo     repository.TasksRepo
 	questionRepo repository.QuestionRepo
+	faqRepo      repository.FAQRepository
 
 	calendar calendar.Calendar
 
@@ -87,4 +88,12 @@ func (c *DiContainer) Calendar() calendar.Calendar {
 	}
 
 	return c.calendar
+}
+
+func (c *DiContainer) FAQRepo() repository.FAQRepository {
+	if c.faqRepo == nil {
+		c.faqRepo = postgres.NewFAQPostgres(c.pool, c.CmdRepo())
+	}
+
+	return c.faqRepo
 }

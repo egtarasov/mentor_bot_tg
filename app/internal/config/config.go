@@ -56,6 +56,7 @@ type AdminConfig struct {
 	MaxPhotoSize   int64
 	PhotoFormKey   string
 	MessageFormKey string
+	FAQCommandName string
 }
 
 type FeedBackConfig struct {
@@ -111,6 +112,7 @@ type adminConfig struct {
 	MaxPhotoSize   int64  `yaml:"max_photo_size"`
 	PhotoFormKey   string `yaml:"photo_form_key"`
 	MessageFormKey string `yaml:"message_form_key"`
+	FAQCommandName string `yaml:"faq_command_name"`
 }
 
 type feedbackConfig struct {
@@ -184,6 +186,7 @@ func NewConfig() error {
 			MaxPhotoSize:   toMegabytes(cfg.Admin.MaxPhotoSize),
 			PhotoFormKey:   cfg.Admin.PhotoFormKey,
 			MessageFormKey: cfg.Admin.MessageFormKey,
+			FAQCommandName: cfg.Admin.FAQCommandName,
 		},
 		Notifications: NotificationsConfig{
 			PhotoPath:             cfg.Notifications.PhotoPath,

@@ -17,6 +17,20 @@ var (
 	ErrCanceled = fmt.Errorf("the command was canceled by the user")
 )
 
+func getNumberWithMessage(ctx context.Context, job *Job, limit int, message string) (int, error) {
+	if err := container.Container.Bot().SendMessage(ctx, models.NewMessage(message, job.GetChatId())); err != nil {
+		return 0, err
+	}
+	return getNumber(ctx, job, limit)
+}
+
+func getStringWithMessage(ctx context.Context, job *Job, message string) (string, error) {
+	if err := container.Container.Bot().SendMessage(ctx, models.NewMessage(message, job.GetChatId())); err != nil {
+		return "", err
+	}
+	return getString(ctx, job)
+}
+
 // getNumber waits for a number from 1 to limit from the user. If the limit less or equal zero, there is no upper bound.
 // Assuming that the message with the request for a number has been already sent. If 'Отмена' will be sent, cancel the
 // processing with the corresponding error.

@@ -12,6 +12,7 @@ func ToCommandFromRepo(cmd *repoModels.Command) *models.Command {
 		Name:     cmd.Name,
 		ActionId: cmd.ActionId,
 		ParentId: cmd.ParentId,
+		IsAdmin:  cmd.IsAdmin,
 	}
 }
 
@@ -33,6 +34,8 @@ func ToUserFromRepo(user *repoModels.User) *models.User {
 		OccupationId:   user.OccupationId,
 		StartWork:      user.StartWork,
 		AdaptationEnds: user.AdaptationEnds,
+		IsAdmin:        user.IsAdmin,
+		Grade:          user.Grade,
 	}
 }
 

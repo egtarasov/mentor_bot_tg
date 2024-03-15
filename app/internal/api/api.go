@@ -72,6 +72,10 @@ func addCommands(app *app) {
 		{key: "Задать вопрос", cmd: commands.NewAskQuestionCmd()},
 		{key: "Показать задачт", cmd: commands.NewShowTasksCmd()},
 		{key: "Полезные матерьялы для меня", cmd: commands.NewOccupationMaterialCmd()},
+		{key: "Неотвеченные вопросы", cmd: commands.NewGetUnansweredQuestionsCmd()},
+		{key: "Ответить на вопрос", cmd: commands.NewAnswerQuestionCmd()},
+		{key: "Изменить FAQ", cmd: commands.NewAddQuestionToFAQCmd()},
+		{key: "", cmd: nil},
 	}
 	if config.Cfg.CalendarUrl != nil {
 		app.complexCmd["Календарь"] = commands.NewCalendarCmd()
@@ -89,7 +93,7 @@ func Run() {
 	}
 	addCommands(app)
 
-	app.runDaemons()
+	//app.runDaemons()
 	app.runServer()
 
 	app.run()
@@ -187,7 +191,11 @@ func (a *app) processJob(job *commands.Job) {
 	case models.ComplexCmd:
 		cmd = a.complexCmd[job.Command.Name]
 	default:
-		// TODO log unknown command type
+		return
+	}
+	if cmd == nil {
+		_ = container.Container.Bot().SendMessage(a.ctx, models.NewMessage("Простите, что-то пошло не так :(",
+			job.Update.ChatId))
 		return
 	}
 

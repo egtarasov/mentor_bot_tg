@@ -5,9 +5,7 @@ import (
 )
 
 var (
-	returnButton = models.Command{
-		Name: "В меню",
-	}
+	returnButton = "В меню"
 )
 
 type ToButtonsCfg struct {
@@ -26,11 +24,11 @@ func DefaultToButtonsCfg(message string, chatId int64) *ToButtonsCfg {
 	}
 }
 
-func ToButtons(commands []models.Command, cfg *ToButtonsCfg) *models.Buttons {
-	size := len(commands)
+func ToButtons(buttonLabels []string, cfg *ToButtonsCfg) *models.Buttons {
+	size := len(buttonLabels)
 	if cfg.ReturnButton {
 		size++
-		commands = append(commands, returnButton)
+		buttonLabels = append(buttonLabels, returnButton)
 	}
 	res := &models.Buttons{
 		Message: models.NewMessage(cfg.Message, cfg.ChatId),
@@ -38,16 +36,25 @@ func ToButtons(commands []models.Command, cfg *ToButtonsCfg) *models.Buttons {
 	}
 
 	i := 0
-	for i < len(commands) {
+	for i < len(buttonLabels) {
 		row := make([]models.Button, 0, cfg.ButtonsInRow)
-		for j := 0; j < cfg.ButtonsInRow && i < len(commands); j++ {
-			row = append(row, models.Button(commands[i].Name))
+		for j := 0; j < cfg.ButtonsInRow && i < len(buttonLabels); j++ {
+			row = append(row, models.Button(buttonLabels[i]))
 			i++
 		}
 		res.Buttons = append(res.Buttons, row)
 	}
 
 	return res
+}
+
+func CommandsToButtons(commands []models.Command, cfg *ToButtonsCfg) *models.Buttons {
+	buttonLabels := make([]string, 0, len(commands))
+	for _, command := range commands {
+		buttonLabels = append(buttonLabels, command.Name)
+	}
+
+	return ToButtons(buttonLabels, cfg)
 }
 
 func UncompletedTodo(todos []models.Todo) []models.Todo {

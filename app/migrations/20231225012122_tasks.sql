@@ -27,7 +27,8 @@ CREATE TABLE goals (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(1024) NOT NULL,
     description VARCHAR(4096) DEFAULT NULL,
-    employee_id BIGINT REFERENCES employees(id),
+    occupation_id BIGINT REFERENCES occupations(id),
+    grade INT NOT NULL DEFAULT 17,
     track_id BIGINT NOT NUll REFERENCES goal_tracks(id)
 );
 -- +goose StatementEnd
