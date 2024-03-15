@@ -178,7 +178,17 @@ values ('Взять технику для работы', 1, 1, false),
        ('Записаться в группы по интересу', 11, 1, false);
 
 insert into goal_tracks (id, track)
-values (1, 'default');
+values (1, 'Карьерный'), (2, 'Личностный'), (3, 'Лидерский');
 
 insert into tasks (name, description, story_points, employee_id)
-values ('A', 'Task A', 2, 1),('B', 'Task B', 20, 1),('C', 'Task C', 4, 1);
+values ('Написать ручку для API', 'Нужно сделать ручку в соответсвии с требованиями', 2, 1),('B', 'Task B', 20, 1),('C', 'Task C', 4, 1);
+
+
+
+insert into notifications (message, notification_time, day_of_week, repeat_time)
+values ('Привет!
+
+Напомниаю, что сегодня проводятся треннинги для сотрудников.
+Точное время и местовстречи можешь найти в рабочем календаре или узнать у своего hr.
+
+Удачи!', time '13:00', 1, interval '1 week');

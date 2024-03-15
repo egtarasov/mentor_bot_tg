@@ -93,7 +93,7 @@ func Run() {
 	}
 	addCommands(app)
 
-	//app.runDaemons()
+	app.runDaemons()
 	app.runServer()
 
 	app.run()
@@ -105,9 +105,7 @@ func (a *app) runServer() {
 
 func (a *app) runDaemons() {
 	go daemons.NewFeedbackDaemon(a.ctx)
-	go daemons.NewHrMeetupDaemon(a.ctx)
-	go daemons.NewTrainingDaemon(a.ctx)
-	go daemons.NewMentorMeetupDaemon(a.ctx)
+	go daemons.StartNotificationDaemon(a.ctx)
 }
 
 func (a *app) run() {

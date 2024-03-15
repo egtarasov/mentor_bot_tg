@@ -91,15 +91,12 @@ type Buttons struct {
 
 type Track string
 
-const (
-	DefaultTrack Track = "default"
-)
-
 type Goal struct {
 	Id          int64
 	Name        string
 	Description string
-	EmployeeId  int64
+	Grade       int
+	Occupation  string
 	Track       Track
 }
 
@@ -130,6 +127,14 @@ type Meeting struct {
 	Name        string        `json:"name"`
 	Description string        `json:"description"`
 	StartTime   time.Duration `json:"start_time"`
+}
+
+type Notification struct {
+	Id               int64
+	Message          string
+	NotificationTime time.Duration
+	DayOfWeek        int
+	RepeatTime       time.Duration
 }
 
 func NewMessage(msg string, chatID int64) *Message {

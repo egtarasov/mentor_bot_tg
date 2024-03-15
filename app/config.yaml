@@ -15,18 +15,6 @@ feedback:
 notifications:
   photo_path :  "./images/notification.jpg"
 
-  training_repeat:      2 # weeks
-  training_day_of_week: "Fri" # day of the week
-  training_hour:       9 # hour
-
-  hr_meetup_repeat:     2 # weeks
-  hr_meetup_day_of_week: "Fri" # day of the week
-  hr_meetup_hour:      9 # hour
-
-  mentor_meetup_repeat: 2 # weeks
-  mentor_meetup_day_of_week: "Fri" # day of the week
-  mentor_meetup_hour:  9 # hour
-
 tasks:
 #  photo_path_goals:
   photo_path_tasks: "./images/tasks.jpg"

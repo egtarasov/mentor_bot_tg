@@ -44,17 +44,21 @@ func GetGoals(goals []models.Goal, chatId int64) *models.Message {
 		return models.NewMessage("Ты выполнил все свои цели!", chatId)
 	}
 	var msg strings.Builder
-	msg.WriteString("**Цели**\n")
+	msg.WriteString("**Твои Цели**\n\n")
 
 	for _, goal := range goals {
 		msg.WriteString(goalView(&goal))
+		msg.WriteString("--------------------------\n\n")
 	}
 
 	return models.NewMessageWithPhotoPath(msg.String(), chatId, config.Cfg.Tasks.PhotoPathGoals)
 }
 
 func goalView(goal *models.Goal) string {
-	return fmt.Sprintf("*%s*\nТрек: %s\n\t%s\n", goal.Name, goal.Track, goal.Description)
+	return fmt.Sprintf(
+		"Цель: %s\n\n"+
+			"Трек: %s\n\n"+
+			"Описание: %s\n\n", goal.Name, goal.Track, goal.Description)
 }
 
 const (

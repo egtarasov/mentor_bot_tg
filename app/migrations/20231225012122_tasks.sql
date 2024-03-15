@@ -7,7 +7,8 @@
      story_points INT NOT NULL DEFAULT 0,
      employee_id BIGINT REFERENCES employees(id),
      created_at timestamp not null default now(),
-     completed_at timestamp default null
+     completed_at timestamp default null,
+     deadline timestamp default null
  );
 
 CREATE TABLE todo_list (

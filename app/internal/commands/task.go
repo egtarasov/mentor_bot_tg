@@ -61,7 +61,7 @@ func (c *checkTodoCmd) Execute(ctx context.Context, job *Job) error {
 	}
 
 	// Check the todo as completed.
-	err = container.Container.TaskRepo().CheckTodo(ctx, &todos[number])
+	err = container.Container.TaskRepo().CheckTodo(ctx, &uncompletedTodos[number-1])
 	if err != nil {
 		return err
 	}
@@ -79,7 +79,7 @@ func NewShowGoalCmd() Cmd {
 }
 
 func (c *showGoalsCmd) Execute(ctx context.Context, job *Job) error {
-	goals, err := container.Container.TaskRepo().GetGoalsById(ctx, job.User.Id)
+	goals, err := container.Container.TaskRepo().GetGoalsByUser(ctx, job.User)
 	if err != nil {
 		return err
 	}

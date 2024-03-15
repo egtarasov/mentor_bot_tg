@@ -53,7 +53,8 @@ type Goal struct {
 	Id          int64  `db:"id"`
 	Name        string `db:"name"`
 	Description string `db:"description"`
-	EmployeeId  int64  `db:"employee_id"`
+	Grade       int    `db:"grade"`
+	Occupation  string `db:"occupation_name"`
 	Track       string `db:"track"`
 }
 
@@ -78,4 +79,12 @@ type CommandWithMaterial struct {
 	Name     string `db:"name"`
 	Message  string `db:"message"`
 	ActionId int64  `db:"action_id"`
+}
+
+type Notification struct {
+	Id               int64         `db:"id"`
+	Message          string        `db:"message"`
+	NotificationTime time.Time     `db:"notification_time"`
+	DayOfWeek        int           `db:"day_of_week"`
+	RepeatTime       time.Duration `db:"repeat_time"`
 }

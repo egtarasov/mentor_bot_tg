@@ -2,6 +2,7 @@ package convert
 
 import (
 	"telegrambot_new_emploee/internal/models"
+	"time"
 )
 
 var (
@@ -13,6 +14,13 @@ type ToButtonsCfg struct {
 	Message      string
 	ButtonsInRow int
 	ReturnButton bool
+}
+
+func TimeToDuration(t time.Time) time.Duration {
+	hours := time.Duration(t.Hour())
+	minutes := time.Duration(t.Minute())
+	seconds := time.Duration(t.Second())
+	return time.Hour*hours + time.Minute*minutes + time.Second*seconds
 }
 
 func DefaultToButtonsCfg(message string, chatId int64) *ToButtonsCfg {

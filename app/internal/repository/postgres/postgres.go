@@ -306,14 +306,15 @@ func (t *tasksPostgres) CheckTodo(ctx context.Context, todo *models.Todo) error 
 	return err
 }
 
-func (t *tasksPostgres) GetGoalsById(ctx context.Context, employeeId int64) ([]models.Goal, error) {
+func (t *tasksPostgres) GetGoalsByUser(ctx context.Context, user *models.User) ([]models.Goal, error) {
 	var goals []repoModels.Goal
-	query := `select g.id, g.name, g.description, g.employee_id, t.track
-	from goals g
-    join goal_tracks t on g.track_id = t.id
-    where g.employee_id = $1`
+	query := `select g.id, g.name, g.description, g.grade, gt.track, o.name as occupation_name
+			  from goals g
+			  join public.goal_tracks gt on gt.id = g.track_id
+			  join occupations o on o.id = g.occupation_id
+			  where g.grade = $1 and g.occupation_id = $2`
 
-	err := pgxscan.Select(ctx, t.pool, &goals, query, employeeId)
+	err := pgxscan.Select(ctx, t.pool, &goals, query, user.Grade, user.OccupationId)
 	if errors.As(err, &pgx.ErrNoRows) {
 		return nil, nil
 	}
@@ -412,16 +413,16 @@ func (q *questionsPostgres) GetQuestionById(ctx context.Context, questionId int6
 	return convert.ToQuestionFromRepo(&question), nil
 }
 
-type faqPostgres struct {
+type adminPostgres struct {
 	pool        *pgxpool.Pool
 	commandRepo repository.CommandRepo
 }
 
-func NewFAQPostgres(pool *pgxpool.Pool, repo repository.CommandRepo) repository.FAQRepository {
-	return &faqPostgres{pool: pool, commandRepo: repo}
+func NewAdminPostgres(pool *pgxpool.Pool, repo repository.CommandRepo) repository.AdminRepository {
+	return &adminPostgres{pool: pool, commandRepo: repo}
 }
 
-func (f *faqPostgres) GetFAQSections(ctx context.Context) ([]string, error) {
+func (f *adminPostgres) GetFAQSections(ctx context.Context) ([]string, error) {
 	var sections []string
 	query := `select name from commands
 			  where parent_id = (select id from commands where name = $1)`
@@ -433,7 +434,7 @@ func (f *faqPostgres) GetFAQSections(ctx context.Context) ([]string, error) {
 	return sections, nil
 }
 
-func (f *faqPostgres) UpdateFAQ(ctx context.Context, faq *repository.UpdateFaq) error {
+func (f *adminPostgres) UpdateFAQ(ctx context.Context, faq *repository.UpdateFaq) error {
 	command, err := f.commandRepo.GetCommand(ctx, faq.SectionName)
 	if err != nil {
 		return err
@@ -457,4 +458,15 @@ func (f *faqPostgres) UpdateFAQ(ctx context.Context, faq *repository.UpdateFaq) 
 	}
 
 	return tx.Commit(ctx)
+}
+
+func (f *adminPostgres) GetNotifications(ctx context.Context) ([]models.Notification, error) {
+	var notifications []repoModels.Notification
+	query := `select id, message, notification_time, day_of_week, repeat_time from notifications`
+	err := pgxscan.Select(ctx, f.pool, &notifications, query)
+	if err != nil {
+		return nil, err
+	}
+
+	return convert.ToArray(notifications, convert.ToNotificationFromRepo), nil
 }

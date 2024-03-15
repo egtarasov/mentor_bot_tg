@@ -31,7 +31,7 @@ func StartServer() {
 	mux.HandleFunc("POST /commands", s.AddCommand)
 
 	mux.HandleFunc("POST /send", s.SendMessage)
-	mux.HandleFunc("POST /add/employee", s.AddEmployee)
+	mux.HandleFunc("POST /add/tasks", s.AddEmployee)
 
 	if err := http.ListenAndServe(config.Cfg.Admin.Port, mux); err != nil {
 		log.Println(err)
@@ -69,6 +69,9 @@ func unmarshalBody[T any](w http.ResponseWriter, r *http.Request) *T {
 
 func (s *server) AddEmployee(w http.ResponseWriter, r *http.Request) {
 	req := unmarshalBody[repository.AddTasks](w, r)
+	if req == nil {
+		return
+	}
 	err := container.Container.UserRepo().AddTasks(s.ctx, req)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)

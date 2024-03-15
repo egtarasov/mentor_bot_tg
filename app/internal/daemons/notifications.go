@@ -2,10 +2,11 @@ package daemons
 
 import (
 	"context"
+	"log"
 	"telegrambot_new_emploee/internal/config"
+	"telegrambot_new_emploee/internal/convert"
 	container "telegrambot_new_emploee/internal/di-container"
 	"telegrambot_new_emploee/internal/models"
-	"telegrambot_new_emploee/internal/views"
 	"time"
 )
 
@@ -30,39 +31,24 @@ func (n *notificationDaemon) start(ctx context.Context) error {
 	return nil
 }
 
-func NewTrainingDaemon(ctx context.Context) {
-	startNotificationDaemon(
-		ctx,
-		config.Cfg.Notifications.TrainingHour,
-		config.Cfg.Notifications.TrainingDayOfWeek,
-		config.Cfg.Notifications.TrainingRepeat,
-		newNotificationDaemon(views.TrainingNotification()),
-	)
-}
-
-func NewHrMeetupDaemon(ctx context.Context) {
-	startNotificationDaemon(
-		ctx,
-		config.Cfg.Notifications.HrMeetupHour,
-		config.Cfg.Notifications.HrMeetupDayOfWeek,
-		config.Cfg.Notifications.HrMeetupRepeat,
-		newNotificationDaemon(views.HrMeetupNotification()),
-	)
-}
-
-func NewMentorMeetupDaemon(ctx context.Context) {
-	startNotificationDaemon(
-		ctx,
-		config.Cfg.Notifications.MentorMeetupHour,
-		config.Cfg.Notifications.MentorMeetupDayOfWeek,
-		config.Cfg.Notifications.MentorMeetupRepeat,
-		newNotificationDaemon(views.MentorMeetupNotification()),
-	)
+func StartNotificationDaemon(ctx context.Context) {
+	notifications, err := container.Container.FAQRepo().GetNotifications(ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
+	for _, notification := range notifications {
+		startNotificationDaemon(
+			ctx,
+			notification.NotificationTime,
+			notification.DayOfWeek,
+			notification.RepeatTime,
+			newNotificationDaemon(notification.Message))
+	}
 }
 
 func startNotificationDaemon(
 	ctx context.Context,
-	hour int,
+	hour time.Duration,
 	dayOfWeek int,
 	repeat time.Duration,
 	daemon daemon,
@@ -71,7 +57,11 @@ func startNotificationDaemon(
 	startDaemon(ctx, repeat, daemon)
 }
 
-func waitUntilTheCorrectTime(hour int, dayOfWeek int) {
+func waitUntilTheCorrectTime(hour time.Duration, dayOfWeek int) {
+	now := time.Now()
+	days := time.Duration((dayOfWeek - int(now.Weekday()) + 7) % 7)
+	hours := convert.TimeToDuration(now)
+	time.Sleep(days + (hour - hours))
 }
 
 func sendNotification(ctx context.Context, user *models.User, message string) error {

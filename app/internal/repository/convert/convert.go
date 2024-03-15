@@ -2,6 +2,7 @@ package convert
 
 import (
 	"database/sql"
+	"telegrambot_new_emploee/internal/convert"
 	"telegrambot_new_emploee/internal/models"
 	repoModels "telegrambot_new_emploee/internal/repository/models"
 )
@@ -52,7 +53,8 @@ func ToGoalFromRepo(goal *repoModels.Goal) *models.Goal {
 		Id:          goal.Id,
 		Name:        goal.Name,
 		Description: goal.Description,
-		EmployeeId:  goal.EmployeeId,
+		Grade:       goal.Grade,
+		Occupation:  goal.Occupation,
 		Track:       models.Track(goal.Track),
 	}
 }
@@ -103,6 +105,16 @@ func ToCommandWithMaterialFromRepo(cmd *repoModels.CommandWithMaterial) *models.
 		Name:     cmd.Name,
 		Message:  cmd.Message,
 		ActionId: cmd.ActionId,
+	}
+}
+
+func ToNotificationFromRepo(notification *repoModels.Notification) *models.Notification {
+	return &models.Notification{
+		Id:               notification.Id,
+		Message:          notification.Message,
+		NotificationTime: convert.TimeToDuration(notification.NotificationTime),
+		DayOfWeek:        notification.DayOfWeek,
+		RepeatTime:       notification.RepeatTime,
 	}
 }
 
