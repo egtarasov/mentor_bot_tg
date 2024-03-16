@@ -75,6 +75,7 @@ func addCommands(app *app) {
 		{key: "Неотвеченные вопросы", cmd: commands.NewGetUnansweredQuestionsCmd()},
 		{key: "Ответить на вопрос", cmd: commands.NewAnswerQuestionCmd()},
 		{key: "Изменить FAQ", cmd: commands.NewAddQuestionToFAQCmd()},
+		{key: "Отправить сообщение", cmd: commands.NewSendMessageCmd()},
 		{key: "", cmd: nil},
 	}
 	if config.Cfg.CalendarUrl != nil {
@@ -104,8 +105,8 @@ func (a *app) runServer() {
 }
 
 func (a *app) runDaemons() {
-	go daemons.NewFeedbackDaemon(a.ctx)
 	go daemons.StartNotificationDaemon(a.ctx)
+	go daemons.StartTasksNotificationDaemon(a.ctx)
 }
 
 func (a *app) run() {

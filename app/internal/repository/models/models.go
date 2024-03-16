@@ -27,6 +27,7 @@ type Task struct {
 	EmployeeId  int64               `db:"employee_id"`
 	CreatedAt   time.Time           `db:"created_at"`
 	CompletedAt sql.Null[time.Time] `db:"completed_at"`
+	Deadline    sql.Null[time.Time] `db:"deadline"`
 }
 
 type Todo struct {
@@ -82,9 +83,10 @@ type CommandWithMaterial struct {
 }
 
 type Notification struct {
-	Id               int64         `db:"id"`
-	Message          string        `db:"message"`
-	NotificationTime time.Time     `db:"notification_time"`
-	DayOfWeek        int           `db:"day_of_week"`
-	RepeatTime       time.Duration `db:"repeat_time"`
+	Id               int64            `db:"id"`
+	Message          string           `db:"message"`
+	NotificationTime time.Time        `db:"notification_time"`
+	PhotoPath        sql.Null[string] `db:"photo_path"`
+	DayOfWeek        int              `db:"day_of_week"`
+	RepeatTime       time.Duration    `db:"repeat_time"`
 }

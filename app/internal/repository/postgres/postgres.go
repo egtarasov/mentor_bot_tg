@@ -268,7 +268,7 @@ func NewTasksRepo(pool *pgxpool.Pool) repository.TasksRepo {
 
 func (t *tasksPostgres) GetTasksById(ctx context.Context, employeeId int64) ([]models.Task, error) {
 	var tasks []repoModels.Task
-	query := `select id, name, description, story_points, employee_id, created_at, completed_at 
+	query := `select id, name, description, story_points, employee_id, created_at, completed_at, deadline 
 				from tasks 
 				where employee_id = $1`
 
@@ -462,7 +462,7 @@ func (f *adminPostgres) UpdateFAQ(ctx context.Context, faq *repository.UpdateFaq
 
 func (f *adminPostgres) GetNotifications(ctx context.Context) ([]models.Notification, error) {
 	var notifications []repoModels.Notification
-	query := `select id, message, notification_time, day_of_week, repeat_time from notifications`
+	query := `select id, message, photo_path, notification_time, day_of_week, repeat_time from notifications`
 	err := pgxscan.Select(ctx, f.pool, &notifications, query)
 	if err != nil {
 		return nil, err

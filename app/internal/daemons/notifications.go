@@ -3,7 +3,6 @@ package daemons
 import (
 	"context"
 	"log"
-	"telegrambot_new_emploee/internal/config"
 	"telegrambot_new_emploee/internal/convert"
 	container "telegrambot_new_emploee/internal/di-container"
 	"telegrambot_new_emploee/internal/models"
@@ -12,10 +11,14 @@ import (
 
 type notificationDaemon struct {
 	notificationMsg string
+	photoPath       *string
 }
 
-func newNotificationDaemon(message string) daemon {
-	return &notificationDaemon{notificationMsg: message}
+func newNotificationDaemon(message string, photoPath *string) daemon {
+	return &notificationDaemon{
+		notificationMsg: message,
+		photoPath:       photoPath,
+	}
 }
 
 func (n *notificationDaemon) start(ctx context.Context) error {
@@ -24,11 +27,23 @@ func (n *notificationDaemon) start(ctx context.Context) error {
 		return err
 	}
 	for _, user := range users {
-		if sendNotification(ctx, &user, n.notificationMsg) != nil {
+		if n.sendNotification(ctx, &user) != nil {
 			return err
 		}
 	}
 	return nil
+}
+
+func (n *notificationDaemon) sendNotification(ctx context.Context, user *models.User) error {
+	return container.Container.Bot().
+		SendMessage(
+			ctx,
+			models.NewMessageWithPhotoPath(
+				n.notificationMsg,
+				user.TelegramId,
+				n.photoPath,
+			),
+		)
 }
 
 func StartNotificationDaemon(ctx context.Context) {
@@ -42,7 +57,7 @@ func StartNotificationDaemon(ctx context.Context) {
 			notification.NotificationTime,
 			notification.DayOfWeek,
 			notification.RepeatTime,
-			newNotificationDaemon(notification.Message))
+			newNotificationDaemon(notification.Message, notification.PhotoPath))
 	}
 }
 
@@ -62,16 +77,4 @@ func waitUntilTheCorrectTime(hour time.Duration, dayOfWeek int) {
 	days := time.Duration((dayOfWeek - int(now.Weekday()) + 7) % 7)
 	hours := convert.TimeToDuration(now)
 	time.Sleep(days + (hour - hours))
-}
-
-func sendNotification(ctx context.Context, user *models.User, message string) error {
-	return container.Container.Bot().
-		SendMessage(
-			ctx,
-			models.NewMessageWithPhotoPath(
-				message,
-				user.TelegramId,
-				config.Cfg.Notifications.PhotoPath,
-			),
-		)
 }

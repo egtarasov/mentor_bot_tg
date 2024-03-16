@@ -88,6 +88,7 @@ func ToTaskFromRepo(task *repoModels.Task) *models.Task {
 		EmployeeId:  task.EmployeeId,
 		CreatedAt:   task.CreatedAt,
 		CompletedAt: sqlNullToPointer(task.CompletedAt),
+		Deadline:    sqlNullToPointer(task.Deadline),
 	}
 }
 
@@ -115,6 +116,7 @@ func ToNotificationFromRepo(notification *repoModels.Notification) *models.Notif
 		NotificationTime: convert.TimeToDuration(notification.NotificationTime),
 		DayOfWeek:        notification.DayOfWeek,
 		RepeatTime:       notification.RepeatTime,
+		PhotoPath:        sqlNullToPointer(notification.PhotoPath),
 	}
 }
 

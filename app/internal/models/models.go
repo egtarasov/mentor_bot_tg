@@ -9,6 +9,7 @@ type Update struct {
 	User         *User
 	ChatId       int64
 	Message      string
+	PhotoIds     []string
 }
 
 type User struct {
@@ -69,11 +70,13 @@ type Task struct {
 	EmployeeId  int64
 	CreatedAt   time.Time
 	CompletedAt *time.Time
+	Deadline    *time.Time
 }
 
 type Message struct {
 	PhotoPath  *string
 	PhotoBytes []byte
+	PhotoIds   []string
 	Message    string
 	ChatId     int64
 }
@@ -132,6 +135,7 @@ type Meeting struct {
 type Notification struct {
 	Id               int64
 	Message          string
+	PhotoPath        *string
 	NotificationTime time.Duration
 	DayOfWeek        int
 	RepeatTime       time.Duration
@@ -155,12 +159,20 @@ func NewMessageWithPhotoPath(msg string, chatID int64, photoPath *string) *Messa
 	}
 }
 
-func NewMessageWithPhotoBytes(msg string, chatID int64, photoBytes []byte) *Message {
+func NewMessageWithPhotoBytes(msg string, chatId int64, photoBytes []byte) *Message {
 	return &Message{
 		PhotoPath:  nil,
 		PhotoBytes: photoBytes,
 		Message:    msg,
-		ChatId:     chatID,
+		ChatId:     chatId,
+	}
+}
+
+func NewMessageWithPhotoIds(msg string, chatId int64, photoIds []string) *Message {
+	return &Message{
+		PhotoIds: photoIds,
+		Message:  msg,
+		ChatId:   chatId,
 	}
 }
 

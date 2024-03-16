@@ -103,7 +103,7 @@ func GetTasks(tasks []models.Task, user *models.User) *models.Message {
 		}
 		msg.WriteString(fmt.Sprintf("%d. ", i+1))
 		msg.WriteString(taskView(&task))
-		msg.WriteString("\n")
+		msg.WriteString("\n\n")
 	}
 
 	// Progress bar and motivation message.
@@ -120,5 +120,24 @@ func taskView(task *models.Task) string {
 		"%s\n"+
 			"    Описание: %s\n"+
 			"    Сторипоинты: %d\n"+
-			"    Создана: %s\n", task.Name, task.Description, task.StoryPoints, task.CreatedAt.Format("2006-01-02 15:04:05"))
+			"    Создана: %s\n"+
+			"    Дедлайн: %s",
+		task.Name,
+		task.Description,
+		task.StoryPoints,
+		task.CreatedAt.Format("2006-01-02 15:04:05"),
+		task.Deadline.Format("2006-01-02 15:04:05"))
+}
+
+func TasksDeadlineNotification(tasks []models.Task, chatId int64) *models.Message {
+	var builder strings.Builder
+	builder.WriteString("У тебя приблежается дедлайн по следующим задачам:\n\n")
+	for i, task := range tasks {
+		builder.WriteString(fmt.Sprintf("%v. ", i+1))
+		builder.WriteString(taskView(&task))
+		builder.WriteString("\n\n")
+	}
+	builder.WriteString("Поторопись!")
+
+	return models.NewMessage(builder.String(), chatId)
 }

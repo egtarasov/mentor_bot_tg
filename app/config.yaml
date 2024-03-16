@@ -7,14 +7,6 @@ admin:
   message_form_key: "message"
   faq_command_name: "FAQ"
 
-feedback:
-  form: "https://best-company.com/feedback"
-  duration: 2 # weeks
-  photo_path: "./images/feedback.jpg"
-
-notifications:
-  photo_path :  "./images/notification.jpg"
-
 tasks:
 #  photo_path_goals:
   photo_path_tasks: "./images/tasks.jpg"

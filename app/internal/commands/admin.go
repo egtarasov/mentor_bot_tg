@@ -2,6 +2,7 @@ package commands
 
 import (
 	"context"
+	"log"
 	container "telegrambot_new_emploee/internal/di-container"
 	"telegrambot_new_emploee/internal/models"
 	"telegrambot_new_emploee/internal/repository"
@@ -93,6 +94,38 @@ func (c *addQuestionToFAQCmd) Execute(ctx context.Context, job *Job) error {
 	})
 	if err != nil {
 		return err
+	}
+
+	return container.Container.Bot().SendMessage(ctx, models.NewMessage("Успех!", job.GetChatId()))
+}
+
+type sendMessageStringCmd struct {
+}
+
+func NewSendMessageCmd() Cmd {
+	return &sendMessageStringCmd{}
+}
+
+func (c *sendMessageStringCmd) Execute(ctx context.Context, job *Job) error {
+	err := container.Container.Bot().SendMessage(ctx, models.NewMessage("Введит есообщение для рассылки", job.GetChatId()))
+	if err != nil {
+		return err
+	}
+
+	update := job.Queue.WaitForUpdate()
+	message := models.NewMessageWithPhotoIds(update.Message, -1, update.PhotoIds)
+
+	users, err := container.Container.UserRepo().GetUsersOnAdaptation(ctx)
+	if err != nil {
+		return err
+	}
+
+	for _, user := range users {
+		message.ChatId = user.TelegramId
+		err := container.Container.Bot().SendMessage(ctx, message)
+		if err != nil {
+			log.Println(err)
+		}
 	}
 
 	return container.Container.Bot().SendMessage(ctx, models.NewMessage("Успех!", job.GetChatId()))

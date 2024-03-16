@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"telegrambot_new_emploee/internal/config"
 	"time"
@@ -25,9 +26,16 @@ func b() {
 	ch := bot.GetUpdatesChan(cfg)
 	for update := range ch {
 		id := update.Message.Chat.ID
-		msg := tgbotapi.NewMessage(id, "Whta's up")
-		msg.ReplyMarkup = key
-		bot.Send(msg)
+		var files []any
+		for _, photo := range update.Message.Photo {
+			files = append(files, tgbotapi.NewInputMediaPhoto(tgbotapi.FileID(photo.FileID)))
+		}
+		media := tgbotapi.NewMediaGroup(id, files)
+		m, err := bot.SendMediaGroup(media)
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+		_, _ = m, err
 	}
 }
 

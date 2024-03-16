@@ -5,11 +5,13 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"sync"
 	"telegrambot_new_emploee/internal/models"
+	"time"
 )
 
 type telegramBot struct {
 	bot       *tgbotapi.BotAPI
 	parseMode string
+	ch        <-chan tgbotapi.Update
 
 	lock          sync.RWMutex
 	photosStorage map[string]string
@@ -74,9 +76,25 @@ func (b *telegramBot) newMessage(message *models.Message, markUp any) *tgbotapi.
 	return &msg
 }
 
+func (b *telegramBot) newMediaGroup(message *models.Message) tgbotapi.Chattable {
+	var group []any
+	for i, id := range message.PhotoIds {
+		photo := tgbotapi.NewInputMediaPhoto(tgbotapi.FileID(id))
+		if i == 0 {
+			photo.Caption = message.Message
+		}
+		group = append(group, photo)
+	}
+
+	return tgbotapi.NewMediaGroup(message.ChatId, group)
+}
+
 func (b *telegramBot) newChattable(message *models.Message, markup any) (tgbotapi.Chattable, bool) {
 	if message.PhotoBytes != nil || message.PhotoPath != nil {
 		return b.newPhoto(message, markup)
+	}
+	if message.PhotoIds != nil {
+		return b.newMediaGroup(message), true
 	}
 	return b.newMessage(message, markup), true
 }
@@ -87,14 +105,14 @@ func (b *telegramBot) Start(ctx context.Context) <-chan *models.Update {
 	// Retrieve all updates and convert them to standard format.
 	go func() {
 		cfg := tgbotapi.NewUpdate(0)
-		cfg.Timeout = 30
-		ch := b.bot.GetUpdatesChan(cfg)
+		cfg.Timeout = 15
+		b.ch = b.bot.GetUpdatesChan(cfg)
 		for {
 			select {
 			case <-ctx.Done():
 				return
-			case update := <-ch:
-				u := telegramToUpdate(&update)
+			case update := <-b.ch:
+				u := b.telegramToUpdate(ctx, &update)
 				if u != nil {
 					updates <- u
 				}
@@ -105,9 +123,39 @@ func (b *telegramBot) Start(ctx context.Context) <-chan *models.Update {
 	return updates
 }
 
-func telegramToUpdate(update *tgbotapi.Update) *models.Update {
+func (b *telegramBot) getMediaGroup(ctx context.Context, update *tgbotapi.Update) *models.Update {
+	text := update.Message.Caption
+	var photoIds []string
+	if update.Message.Photo != nil {
+		photoIds = append(photoIds, update.Message.Photo[0].FileID)
+	}
+
+	for {
+		ctx, cancel := context.WithTimeout(ctx, time.Second)
+		defer cancel()
+
+		select {
+		case <-ctx.Done():
+			return &models.Update{
+				UpdateUserId: update.Message.From.ID,
+				ChatId:       update.Message.Chat.ID,
+				Message:      text,
+				PhotoIds:     photoIds,
+			}
+		case update := <-b.ch:
+			if update.Message.Photo != nil {
+				photoIds = append(photoIds, update.Message.Photo[0].FileID)
+			}
+		}
+	}
+}
+
+func (b *telegramBot) telegramToUpdate(ctx context.Context, update *tgbotapi.Update) *models.Update {
 	if update.Message == nil {
 		return nil
+	}
+	if update.Message.MediaGroupID != "" {
+		return b.getMediaGroup(ctx, update)
 	}
 
 	return &models.Update{

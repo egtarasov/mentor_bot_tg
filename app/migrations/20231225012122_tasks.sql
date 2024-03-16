@@ -9,7 +9,7 @@
      created_at timestamp not null default now(),
      completed_at timestamp default null,
      deadline timestamp default null
- );
+);
 
 CREATE TABLE todo_list (
     id BIGSERIAL PRIMARY KEY,
