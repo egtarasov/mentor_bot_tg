@@ -13,7 +13,9 @@ func GetTodo(uncompletedTodos []models.Todo, user *models.User, total int) *mode
 	msg.WriteString("*Чек-лист*\n\n")
 
 	percentage := float64(total-len(uncompletedTodos)) / float64(total)
-
+	if total == 0 {
+		percentage = 1
+	}
 	listTodo(uncompletedTodos, &msg)
 	msg.WriteString("\n\n")
 	progressBar(&msg, percentage)
@@ -35,6 +37,18 @@ func CheckTodo(uncompletedTodos []models.Todo, chatId int64) *models.Message {
 		" чтобы отменить действие:\n\n")
 
 	listTodo(uncompletedTodos, &msg)
+
+	return models.NewMessage(msg.String(), chatId)
+}
+
+func CheckTask(uncompletedTasks []models.Task, chatId int64) *models.Message {
+	var msg strings.Builder
+	msg.WriteString("Введи номер задачи, которую ты хочешь отметить выполненной или 'Отмена'," +
+		" чтобы отменить действие:\n\n")
+
+	for i, task := range uncompletedTasks {
+		msg.WriteString(fmt.Sprintf("%d. %s\n", i+1, task.Name))
+	}
 
 	return models.NewMessage(msg.String(), chatId)
 }
@@ -108,6 +122,9 @@ func GetTasks(tasks []models.Task, user *models.User) *models.Message {
 
 	// Progress bar and motivation message.
 	percentage := float64(completed) / float64(len(tasks))
+	if len(tasks) == 0 {
+		percentage = 1
+	}
 	progressBar(&msg, percentage)
 	msg.WriteString("\n\n")
 	motivationMessage(&msg, percentage, user)
@@ -116,12 +133,23 @@ func GetTasks(tasks []models.Task, user *models.User) *models.Message {
 }
 
 func taskView(task *models.Task) string {
+	if task.Deadline == nil {
+		return fmt.Sprintf(
+			"%s\n"+
+				"    _Описание_: %s\n"+
+				"    _Сторипоинты_: %d\n"+
+				"    _Создана_: %s\n",
+			task.Name,
+			task.Description,
+			task.StoryPoints,
+			task.CreatedAt.Format("2006-01-02 15:04:05"))
+	}
 	return fmt.Sprintf(
 		"%s\n"+
-			"    Описание: %s\n"+
-			"    Сторипоинты: %d\n"+
-			"    Создана: %s\n"+
-			"    Дедлайн: %s",
+			"    _Описание_: %s\n"+
+			"    _Сторипоинты_: %d\n"+
+			"    _Создана_: %s\n"+
+			"    _Дедлайн_: %s",
 		task.Name,
 		task.Description,
 		task.StoryPoints,

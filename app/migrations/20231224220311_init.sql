@@ -39,11 +39,6 @@ INSERT INTO actions (action)
 -- TODO should use something better as names
 VALUES ('get data'), ('show subsections'), ('complex');
 
-INSERT INTO occupations (name, material)
--- TODO add all possible occupations
-VALUES ('developer', 'Матерьял для разработчиков');
-
-
 -- +goose StatementEnd
 
 -- +goose Down

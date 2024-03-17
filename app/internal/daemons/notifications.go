@@ -74,7 +74,7 @@ func startNotificationDaemon(
 
 func waitUntilTheCorrectTime(hour time.Duration, dayOfWeek int) {
 	now := time.Now()
-	days := time.Duration((dayOfWeek - int(now.Weekday()) + 7) % 7)
+	days := time.Duration((dayOfWeek-int(now.Weekday())+7)%7) * day
 	hours := convert.TimeToDuration(now)
 	time.Sleep(days + (hour - hours))
 }

@@ -3,17 +3,32 @@ package repository
 import (
 	"context"
 	"fmt"
+	"strings"
 	"telegrambot_new_emploee/internal/models"
+	"time"
 )
 
 var (
 	ErrNoUser = fmt.Errorf("no user with this tag")
 )
 
+type Deadline time.Time
+
+func (d *Deadline) UnmarshalJSON(b []byte) error {
+	s := strings.Trim(string(b), "\"")
+	t, err := time.Parse("2006-01-02 15:04", s)
+	if err != nil {
+		return err
+	}
+	*d = Deadline(t)
+	return nil
+}
+
 type Task struct {
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	StoryPoints int    `json:"story_points"`
+	Name        string   `json:"name"`
+	Description string   `json:"description"`
+	StoryPoints int      `json:"story_points"`
+	Deadline    Deadline `json:"deadLine"`
 }
 
 type Todo string

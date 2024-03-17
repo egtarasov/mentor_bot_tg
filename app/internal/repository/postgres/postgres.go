@@ -12,6 +12,7 @@ import (
 	"telegrambot_new_emploee/internal/repository"
 	"telegrambot_new_emploee/internal/repository/convert"
 	repoModels "telegrambot_new_emploee/internal/repository/models"
+	"time"
 )
 
 type userPostgres struct {
@@ -32,8 +33,8 @@ func (a *userPostgres) AddTasks(ctx context.Context, tasks *repository.AddTasks)
 	defer tx.Rollback(ctx)
 
 	for _, task := range tasks.Tasks {
-		_, err := tx.Exec(ctx, `insert into tasks (name, description, story_points, employee_id) values ($1, $2, $3, $4)`,
-			task.Name, task.Description, task.StoryPoints, tasks.EmployeeId)
+		_, err := tx.Exec(ctx, `insert into tasks (name, description, story_points, deadline, employee_id) values ($1, $2, $3, $4, $5)`,
+			task.Name, task.Description, task.StoryPoints, time.Time(task.Deadline), tasks.EmployeeId)
 		if err != nil {
 			return err
 		}
@@ -303,6 +304,12 @@ func (t *tasksPostgres) GetTodoListById(ctx context.Context, employeeId int64) (
 func (t *tasksPostgres) CheckTodo(ctx context.Context, todo *models.Todo) error {
 	query := `update todo_list set completed = true where id = $1`
 	_, err := t.pool.Exec(ctx, query, todo.Id)
+	return err
+}
+
+func (t *tasksPostgres) CheckTask(ctx context.Context, task *models.Task) error {
+	query := `update tasks set completed_at = now() where id = $1`
+	_, err := t.pool.Exec(ctx, query, task.Id)
 	return err
 }
 

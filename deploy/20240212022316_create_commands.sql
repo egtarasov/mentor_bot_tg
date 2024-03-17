@@ -1,5 +1,4 @@
-
-truncate table questions, tasks, pictures, goals, goal_tracks, todo_list, employees, materials, commands;
+truncate table questions, tasks, pictures, goals, goal_tracks, todo_list, employees, materials, commands, notifications;
 
 
 INSERT INTO commands (id, name, action_id, parent_id)
@@ -78,9 +77,7 @@ VALUES
 
 1. Мы все стримимся развиваться и создавать все больше иноваций.
 
-2. Общение - самое главное в работе. Мы одна больша комманда, которая решает все проблемы вместе.
-
-3. Семья - это главное.', 9),
+2. Общение - самое главное в работе. Мы одна больша комманда, которая решает все проблемы вместе.', 9),
 
     ('За долги годы у нас появился ряд ценностей, которыми мы дорожим, и которых мы придерживаемся.
 
@@ -155,36 +152,27 @@ values (28, '/admin', 2, default, true),
        (30, 'Изменить FAQ', 3, 28, true),
        (31, 'Неотвеченные вопросы', 3, 29, true),
        (32, 'Ответить на вопрос', 3, 29, true),
-       (33, 'Отправить сообщение', 3, 28, true);
+       (33, 'Отправить сообщение', 3, 28, true),
+       (35, 'Отметить задачу', 3, 13, false);
 
 insert into materials (message, command_id)
 values ('Выбери что ты хочешь сделать', 28),
        ('Вопросы сотрудников', 29);
 
+INSERT INTO occupations (name, material)
+VALUES ('developer', 'Матерьял для разработчиков'), ('analyst', 'Теория веоятности и математическая статистика');
 
 insert into employees (id, name, surname, telegram_id, occupation_id, is_admin, grade)
-values (1, 'egor', 'tarasov', 1040655631, 1, true, 17);
-
-insert into todo_list (label, priority, employee_id, completed)
-values ('Взять технику для работы', 1, 1, false),
-       ('Встретиться с коммандой', 2, 1, false),
-       ('Найти рабочий стол', 3, 1, false),
-       ('Получить доступы', 4, 1, false),
-       ('Пройти [онбординг для новых сотрудников]("https://best-compony.ru/onboarding")', 5, 1, false),
-       ('Познакомится с системой Jira', 6, 1, false),
-       ('Прочитать полезные матерьялы для своей специальности', 7, 1, false),
-       ('Сделать первую задачу', 8, 1, false),
-       ('Сходить на встречу с HR', 9, 1, false),
-       ('Сходить на встречу с ментором', 10, 1, false),
-       ('Записаться в группы по интересу', 11, 1, false);
+values (1, 'Егор', 'Тарасов', 1040655631, 1, true, 17), (2, 'Боб', 'Бобов', -1, 2, false, 17);
 
 insert into goal_tracks (id, track)
 values (1, 'Карьерный'), (2, 'Личностный'), (3, 'Лидерский');
 
-insert into tasks (name, description, story_points, employee_id)
-values ('Написать ручку для API', 'Нужно сделать ручку в соответсвии с требованиями', 2, 1),('B', 'Task B', 20, 1),('C', 'Task C', 4, 1);
-
-
+insert into goals (name, description, occupation_id, grade, track_id)
+values ('Стать middle разработчиком', 'Путь от джуна к мидлу - очень трудный. Тебе предстоит не только научится писать хороший, маштабируемый, эффективный код, но и научится взаимодействовать с коммандами, дизайнить системы, придумывать нестандартные решения и многое другое. Раз в пол года во время оценки работы сотрудников, ты можешь попросить повышения, если почувствуешь, что уже много всего знаешь.',
+        1, 17, 1),
+       ('Стать middle аналитиком', 'Научится самостоятельно анализировать огромные объемы данных и делать на основе о них корректные гипотезы.', 2, 17, 1),
+       ('Развить лидовские навыки', 'Стать хорошим team-lead', 1, 17, 1);
 
 insert into notifications (message, notification_time, day_of_week, repeat_time, photo_path)
 values

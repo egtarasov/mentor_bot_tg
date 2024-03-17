@@ -12,6 +12,7 @@ type telegramBot struct {
 	bot       *tgbotapi.BotAPI
 	parseMode string
 	ch        <-chan tgbotapi.Update
+	updates   chan *models.Update
 
 	lock          sync.RWMutex
 	photosStorage map[string]string
@@ -100,69 +101,91 @@ func (b *telegramBot) newChattable(message *models.Message, markup any) (tgbotap
 }
 
 func (b *telegramBot) Start(ctx context.Context) <-chan *models.Update {
-	updates := make(chan *models.Update)
+	b.updates = make(chan *models.Update)
 
 	// Retrieve all updates and convert them to standard format.
 	go func() {
 		cfg := tgbotapi.NewUpdate(0)
-		cfg.Timeout = 15
+		cfg.Timeout = 30
 		b.ch = b.bot.GetUpdatesChan(cfg)
 		for {
 			select {
 			case <-ctx.Done():
 				return
 			case update := <-b.ch:
-				u := b.telegramToUpdate(ctx, &update)
-				if u != nil {
-					updates <- u
-				}
+				b.telegramToUpdate(ctx, &update)
 			}
 		}
 	}()
 
-	return updates
+	return b.updates
 }
 
-func (b *telegramBot) getMediaGroup(ctx context.Context, update *tgbotapi.Update) *models.Update {
-	text := update.Message.Caption
-	var photoIds []string
-	if update.Message.Photo != nil {
-		photoIds = append(photoIds, update.Message.Photo[0].FileID)
-	}
-
+func (b *telegramBot) getMediaGroup(ctx context.Context, update *models.Update, groupId string) *tgbotapi.Update {
 	for {
-		ctx, cancel := context.WithTimeout(ctx, time.Second)
+		ctx, cancel := context.WithTimeout(ctx, time.Millisecond*5)
 		defer cancel()
 
 		select {
 		case <-ctx.Done():
-			return &models.Update{
-				UpdateUserId: update.Message.From.ID,
-				ChatId:       update.Message.Chat.ID,
-				Message:      text,
-				PhotoIds:     photoIds,
+			return nil
+		case u := <-b.ch:
+			if u.Message == nil {
+				return nil
 			}
-		case update := <-b.ch:
-			if update.Message.Photo != nil {
-				photoIds = append(photoIds, update.Message.Photo[0].FileID)
+			if u.Message.MediaGroupID != groupId {
+				return &u
+			}
+			if u.Message.Photo != nil {
+				update.PhotoIds = append(update.PhotoIds, u.Message.Photo[0].FileID)
 			}
 		}
 	}
 }
 
-func (b *telegramBot) telegramToUpdate(ctx context.Context, update *tgbotapi.Update) *models.Update {
-	if update.Message == nil {
-		return nil
-	}
-	if update.Message.MediaGroupID != "" {
-		return b.getMediaGroup(ctx, update)
-	}
-
-	return &models.Update{
+func defaultUpdate(update *tgbotapi.Update) *models.Update {
+	// Create an update.
+	u := &models.Update{
 		UpdateUserId: update.Message.From.ID,
 		ChatId:       update.Message.Chat.ID,
 		Message:      update.Message.Text,
 	}
+
+	// Process a Photo.
+	if update.Message.Caption != "" {
+		u.Message = update.Message.Caption
+	}
+	var photoIds []string
+	if update.Message.Photo != nil {
+		photoIds = append(photoIds, update.Message.Photo[0].FileID)
+	}
+	u.PhotoIds = photoIds
+
+	return u
+}
+
+func (b *telegramBot) telegramToUpdate(ctx context.Context, update *tgbotapi.Update) {
+	if update == nil || update.Message == nil {
+		return
+	}
+	u := defaultUpdate(update)
+	if update.Message.MediaGroupID != "" {
+		newUpdate := b.getMediaGroup(ctx, u, update.Message.MediaGroupID)
+		b.sendUpdate(u)
+		b.telegramToUpdate(ctx, newUpdate)
+		return
+	}
+
+	b.sendUpdate(u)
+}
+
+func (b *telegramBot) sendUpdate(update *models.Update) {
+	// Last validation of the update.
+	if update.Message == "" && len(update.PhotoIds) == 0 {
+		return
+	}
+
+	b.updates <- update
 }
 
 func getFileId(msg *tgbotapi.Message) string {
@@ -185,11 +208,15 @@ func (b *telegramBot) SendButtons(ctx context.Context, buttons *models.Buttons) 
 	return b.send(buttons.Message, tgbotapi.NewReplyKeyboard(keywordButtons...))
 }
 
+type Message struct {
+	tgbotapi.Message
+}
+
 func (b *telegramBot) send(message *models.Message, markup any) error {
 	msg, ok := b.newChattable(message, markup)
 	m, err := b.bot.Send(msg)
 	if err != nil {
-		return ErrMessageSend
+		return err
 	}
 	if !ok {
 		b.storeFileId(message.FilePath(), getFileId(&m))

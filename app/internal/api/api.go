@@ -70,12 +70,12 @@ func addCommands(app *app) {
 		{key: "Цели", cmd: commands.NewShowGoalCmd()},
 		{key: "Показать задачи", cmd: commands.NewShowTasksCmd()},
 		{key: "Задать вопрос", cmd: commands.NewAskQuestionCmd()},
-		{key: "Показать задачт", cmd: commands.NewShowTasksCmd()},
 		{key: "Полезные матерьялы для меня", cmd: commands.NewOccupationMaterialCmd()},
 		{key: "Неотвеченные вопросы", cmd: commands.NewGetUnansweredQuestionsCmd()},
 		{key: "Ответить на вопрос", cmd: commands.NewAnswerQuestionCmd()},
 		{key: "Изменить FAQ", cmd: commands.NewAddQuestionToFAQCmd()},
 		{key: "Отправить сообщение", cmd: commands.NewSendMessageCmd()},
+		{key: "Отметить задачу", cmd: commands.NewCheckTask()},
 		{key: "", cmd: nil},
 	}
 	if config.Cfg.CalendarUrl != nil {
@@ -138,6 +138,7 @@ func (a *app) processUpdate(update *models.Update) {
 	// Authenticate the user.
 	user := a.authenticate(update)
 	if user == nil {
+		log.Println(update.ChatId)
 		_ = container.Container.Bot().
 			SendMessage(a.ctx,
 				models.NewMessage("Ой, ой! Кажется, вы не являетесь сотрудником!", update.ChatId))

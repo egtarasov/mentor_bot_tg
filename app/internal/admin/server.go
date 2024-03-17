@@ -23,16 +23,17 @@ func StartServer() {
 		commandsService: services.NewCommandsService(),
 	}
 
-	mux.HandleFunc("GET /questions", s.GetRequestsHandler)
-	mux.HandleFunc("POST /questions", s.AnswerQuestion)
+	//mux.HandleFunc("GET /questions", s.GetRequestsHandler)
+	//mux.HandleFunc("POST /questions", s.AnswerQuestion)
 
 	mux.HandleFunc("GET /commands", s.GetCommands)
 	mux.HandleFunc("PUT /commands", s.ChangeCommand)
 	mux.HandleFunc("POST /commands", s.AddCommand)
 
-	mux.HandleFunc("POST /send", s.SendMessage)
+	//mux.HandleFunc("POST /send", s.SendMessage)
 	mux.HandleFunc("POST /add/tasks", s.AddEmployee)
 
+	log.Println("Server listen on port", config.Cfg.Admin.Port)
 	if err := http.ListenAndServe(config.Cfg.Admin.Port, mux); err != nil {
 		log.Println(err)
 	}
@@ -59,6 +60,7 @@ func unmarshalBody[T any](w http.ResponseWriter, r *http.Request) *T {
 	var req T
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
+		log.Println(err)
 		w.WriteHeader(http.StatusBadRequest)
 		_, _ = w.Write([]byte("invalid body"))
 		return nil
@@ -74,6 +76,7 @@ func (s *server) AddEmployee(w http.ResponseWriter, r *http.Request) {
 	}
 	err := container.Container.UserRepo().AddTasks(s.ctx, req)
 	if err != nil {
+		log.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 }

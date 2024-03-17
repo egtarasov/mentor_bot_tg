@@ -48,14 +48,16 @@ func (c *checkTodoCmd) Execute(ctx context.Context, job *Job) error {
 		return err
 	}
 	uncompletedTodos := convert.UncompletedTodo(todos)
-
+	if len(uncompletedTodos) == 0 {
+		return container.Container.Bot().SendMessage(ctx, models.NewMessage("Все задачи выполнены!", job.GetChatId()))
+	}
 	// Ask the user for a button.
 	err = container.Container.Bot().SendMessage(ctx, views.CheckTodo(uncompletedTodos, job.GetChatId()))
 	if err != nil {
 		return err
 	}
 
-	number, err := getNumber(ctx, job, len(todos))
+	number, err := getNumber(ctx, job, len(uncompletedTodos))
 	if err != nil {
 		return err
 	}
@@ -102,11 +104,7 @@ func (c *showTasksCmd) Execute(ctx context.Context, job *Job) error {
 	return container.Container.Bot().SendMessage(ctx, views.GetTasks(tasks, job.User))
 }
 
-func getUncompletedTask(ctx context.Context, userId int64) ([]models.Task, error) {
-	tasks, err := container.Container.TaskRepo().GetTasksById(ctx, userId)
-	if err != nil {
-		return nil, err
-	}
+func uncompletedTask(ctx context.Context, tasks []models.Task) []models.Task {
 	uncompletedTasks := make([]models.Task, 0, len(tasks))
 	for _, task := range tasks {
 		if task.CompletedAt != nil {
@@ -114,7 +112,7 @@ func getUncompletedTask(ctx context.Context, userId int64) ([]models.Task, error
 		}
 		uncompletedTasks = append(uncompletedTasks, task)
 	}
-	return uncompletedTasks, nil
+	return uncompletedTasks
 }
 
 type occupationMaterialCmd struct {
@@ -131,4 +129,43 @@ func (c *occupationMaterialCmd) Execute(ctx context.Context, job *Job) error {
 	}
 
 	return container.Container.Bot().SendMessage(ctx, models.NewMessage(occupation.Material, job.GetChatId()))
+}
+
+type checkTaskCmd struct {
+}
+
+func NewCheckTask() Cmd {
+	return &checkTaskCmd{}
+}
+
+func (c *checkTaskCmd) Execute(ctx context.Context, job *Job) error {
+	// Get user's uncompleted todos.
+	tasks, err := container.Container.TaskRepo().GetTasksById(ctx, job.User.Id)
+	if err != nil {
+		return err
+	}
+	uncompletedTasks := uncompletedTask(ctx, tasks)
+	if len(uncompletedTasks) == 0 {
+		return container.Container.Bot().SendMessage(ctx, models.NewMessage("Все задачи выполнены!", job.GetChatId()))
+	}
+	// Ask the user for a button.
+	err = container.Container.Bot().SendMessage(ctx, views.CheckTask(uncompletedTasks, job.GetChatId()))
+	if err != nil {
+		return err
+	}
+
+	number, err := getNumber(ctx, job, len(uncompletedTasks))
+	if err != nil {
+		return err
+	}
+
+	// Check the todo as completed.
+	err = container.Container.TaskRepo().CheckTask(ctx, &uncompletedTasks[number-1])
+	if err != nil {
+		return err
+	}
+
+	return container.Container.Bot().SendMessage(
+		ctx,
+		models.NewMessage("Задача была отмечена выполненой!", job.GetChatId()))
 }
