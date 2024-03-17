@@ -8,6 +8,9 @@ import (
 	"time"
 )
 
+const maxTextSize = 4096
+const maxCaptionSize = 1024
+
 type telegramBot struct {
 	bot       *tgbotapi.BotAPI
 	parseMode string
@@ -43,7 +46,7 @@ func NewTelegramBot(token string, parseMode string) (Bot, error) {
 	}, nil
 }
 
-func (b *telegramBot) newPhoto(message *models.Message, markUp any) (*tgbotapi.PhotoConfig, bool) {
+func (b *telegramBot) newPhoto(message *models.Message, markUp any) ([]tgbotapi.Chattable, bool) {
 	var file tgbotapi.RequestFileData
 	flag := true
 	switch {
@@ -64,33 +67,45 @@ func (b *telegramBot) newPhoto(message *models.Message, markUp any) (*tgbotapi.P
 		return nil, flag
 	}
 	photo := tgbotapi.NewPhoto(message.ChatId, file)
-	photo.Caption = message.Message
 	photo.ParseMode = b.parseMode
 	photo.ReplyMarkup = markUp
-	return &photo, flag
+	photo.Caption = message.Message[:min(maxCaptionSize, len(message.Message))]
+	chattables := []tgbotapi.Chattable{photo}
+	return b.parseText(message.Message[min(maxCaptionSize, len(message.Message)):], message.ChatId, chattables), flag
 }
 
-func (b *telegramBot) newMessage(message *models.Message, markUp any) *tgbotapi.MessageConfig {
-	msg := tgbotapi.NewMessage(message.ChatId, message.Message)
+func (b *telegramBot) parseText(text string, chatId int64, chattables []tgbotapi.Chattable) []tgbotapi.Chattable {
+	for len(text) > 0 {
+		msg := tgbotapi.NewMessage(chatId, text[:min(maxTextSize, len(text))])
+		msg.ParseMode = b.parseMode
+		chattables = append(chattables, msg)
+		text = text[min(maxTextSize, len(text)):]
+	}
+	return chattables
+}
+
+func (b *telegramBot) newMessage(message *models.Message, markUp any) []tgbotapi.Chattable {
+	msg := tgbotapi.NewMessage(message.ChatId, message.Message[:min(maxTextSize, len(message.Message))])
 	msg.ParseMode = b.parseMode
 	msg.ReplyMarkup = markUp
-	return &msg
+	chattables := []tgbotapi.Chattable{msg}
+	return b.parseText(message.Message[min(maxTextSize, len(message.Message)):], message.ChatId, chattables)
 }
 
-func (b *telegramBot) newMediaGroup(message *models.Message) tgbotapi.Chattable {
+func (b *telegramBot) newMediaGroup(message *models.Message) []tgbotapi.Chattable {
 	var group []any
 	for i, id := range message.PhotoIds {
 		photo := tgbotapi.NewInputMediaPhoto(tgbotapi.FileID(id))
 		if i == 0 {
-			photo.Caption = message.Message
+			photo.Caption = message.Message[:min(maxCaptionSize, len(message.Message))]
 		}
 		group = append(group, photo)
 	}
-
-	return tgbotapi.NewMediaGroup(message.ChatId, group)
+	chattables := []tgbotapi.Chattable{tgbotapi.NewMediaGroup(message.ChatId, group)}
+	return b.parseText(message.Message[min(maxCaptionSize, len(message.Message)):], message.ChatId, chattables)
 }
 
-func (b *telegramBot) newChattable(message *models.Message, markup any) (tgbotapi.Chattable, bool) {
+func (b *telegramBot) newChattable(message *models.Message, markup any) ([]tgbotapi.Chattable, bool) {
 	if message.PhotoBytes != nil || message.PhotoPath != nil {
 		return b.newPhoto(message, markup)
 	}
@@ -213,13 +228,15 @@ type Message struct {
 }
 
 func (b *telegramBot) send(message *models.Message, markup any) error {
-	msg, ok := b.newChattable(message, markup)
-	m, err := b.bot.Send(msg)
-	if err != nil {
-		return err
-	}
-	if !ok {
-		b.storeFileId(message.FilePath(), getFileId(&m))
+	messages, ok := b.newChattable(message, markup)
+	for i, msg := range messages {
+		m, err := b.bot.Send(msg)
+		if err != nil {
+			return err
+		}
+		if !ok && i == 0 {
+			b.storeFileId(message.FilePath(), getFileId(&m))
+		}
 	}
 	return nil
 }

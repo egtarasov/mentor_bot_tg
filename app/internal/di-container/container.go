@@ -2,7 +2,10 @@ package container
 
 import (
 	"context"
+	"database/sql"
 	"github.com/jackc/pgx/v5/pgxpool"
+	_ "github.com/lib/pq"
+	"github.com/pressly/goose/v3"
 	"telegrambot_new_emploee/internal/bot"
 	"telegrambot_new_emploee/internal/calendar"
 	"telegrambot_new_emploee/internal/config"
@@ -43,7 +46,23 @@ func NewDiContainer(ctx context.Context) error {
 		pool: pool,
 	}
 
+	Container.runMigrations()
+
 	return nil
+}
+
+func (c *DiContainer) runMigrations() {
+	db, err := sql.Open("postgres", config.Cfg.ConnStr)
+	defer db.Close()
+	if err != nil {
+		panic(err)
+	}
+	if err := goose.SetDialect("postgres"); err != nil {
+		panic(err)
+	}
+	if err := goose.Up(db, "migrations"); err != nil {
+		panic(err)
+	}
 }
 
 func (c *DiContainer) Bot() bot.Bot {

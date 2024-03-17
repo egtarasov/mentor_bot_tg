@@ -1,19 +1,25 @@
 version: "3.9"
 
 services:
-  postgres:
+  database:
     image: postgres
     container_name: db
-    environment:
-      POSTGRES_DB: "postgres"
-      POSTGRES_USER: "postgres"
-      POSTGRES_PASSWORD: "postgres"
+    env_file:
+      - ".env"
     expose:
       - "5432"
     ports:
       - "5432:5432"
     volumes:
       - storage:/var/lib/pgsql/data
+  bot:
+    build: ../app
+    env_file:
+      - ".env"
+    ports:
+      - "80:80"
+    expose:
+      - "80"
 
 volumes:
   storage:

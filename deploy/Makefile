@@ -12,5 +12,7 @@ upload_tasks:
 	curl -X POST -v "http://localhost:80/add/tasks" -d $(tasks)
 
 
+deploy:
+	docker-compose up &
+	echo 'bob'
 
-#{"name":"Получить доступы в Cloud", "description":"Смотри гайд для новых разработчиков на wiki", "story_points": 1, "deadline" : "2023-05-21 16:00"},\
