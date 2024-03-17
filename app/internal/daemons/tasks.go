@@ -30,7 +30,10 @@ func (t *taskReminderDaemon) start(ctx context.Context) error {
 		}
 		var taskToNotify []models.Task
 		for _, task := range tasks {
-			if task.Deadline == nil || task.CompletedAt != nil || (task.Deadline.Sub(time.Now()) > day) {
+			if task.Deadline == nil ||
+				task.CompletedAt != nil ||
+				task.Deadline.Sub(time.Now()) < 0 ||
+				task.Deadline.Sub(time.Now()) > day {
 				continue
 			}
 			taskToNotify = append(taskToNotify, task)
