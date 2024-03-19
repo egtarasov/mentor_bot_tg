@@ -14,4 +14,4 @@ tasks:
   bar_count: 10
 
 calendar:
-  url: "http://localhost:8000/calendar"
+  url: "http://calendar_service:8000/calendar"

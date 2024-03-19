@@ -107,7 +107,7 @@ func NewSendMessageCmd() Cmd {
 }
 
 func (c *sendMessageStringCmd) Execute(ctx context.Context, job *Job) error {
-	err := container.Container.Bot().SendMessage(ctx, models.NewMessage("Введит есообщение для рассылки", job.GetChatId()))
+	err := container.Container.Bot().SendMessage(ctx, models.NewMessage("Введи сообщение для рассылки", job.GetChatId()))
 	if err != nil {
 		return err
 	}

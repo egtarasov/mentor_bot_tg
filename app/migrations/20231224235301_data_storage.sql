@@ -3,7 +3,7 @@
 CREATE TABLE materials (
     id BIGSERIAL PRIMARY KEY,
 -- maximum size supported by telegram
-    message VARCHAR(4096) NOT NULL,
+    message VARCHAR(1024) NOT NULL,
     command_id BIGINT REFERENCES commands(id)
 );
 -- +goose StatementEnd

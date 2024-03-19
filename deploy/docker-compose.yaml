@@ -20,6 +20,15 @@ services:
       - "80:80"
     expose:
       - "80"
+    links:
+      - database
+      - calendar_service
 
+  calendar_service:
+    build: ../calendar
+    expose:
+      - "8000"
+    ports:
+      - "8000:8000"
 volumes:
   storage:

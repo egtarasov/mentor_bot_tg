@@ -13,6 +13,5 @@ upload_tasks:
 
 
 deploy:
-	docker-compose up &
-	echo 'bob'
+	docker-compose up -d
 
