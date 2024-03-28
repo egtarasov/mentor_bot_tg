@@ -5,11 +5,11 @@ import (
 )
 
 type Update struct {
-	UpdateUserId int64
-	User         *User
-	ChatId       int64
-	Message      string
-	PhotoIds     []string
+	Id       int64
+	User     *User
+	ChatId   int64
+	Message  string
+	PhotoIds []string
 }
 
 type User struct {

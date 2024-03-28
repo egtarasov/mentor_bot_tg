@@ -54,6 +54,6 @@ func (j *Job) getCommand() bool {
 	return true
 }
 
-type Cmd interface {
+type Command interface {
 	Execute(ctx context.Context, job *Job) error
 }

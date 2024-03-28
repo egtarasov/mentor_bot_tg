@@ -14,7 +14,7 @@ type getUnansweredQuestionsCmd struct {
 	service *services.QuestionService
 }
 
-func NewGetUnansweredQuestionsCmd() Cmd {
+func NewGetUnansweredQuestionsCmd() Command {
 	return &getUnansweredQuestionsCmd{
 		service: services.NewQuestionService(),
 	}
@@ -32,7 +32,7 @@ type answerQuestionCmd struct {
 	service *services.QuestionService
 }
 
-func NewAnswerQuestionCmd() Cmd {
+func NewAnswerQuestionCmd() Command {
 	return &answerQuestionCmd{
 		service: services.NewQuestionService(),
 	}
@@ -60,7 +60,7 @@ func (c *answerQuestionCmd) Execute(ctx context.Context, job *Job) error {
 type addQuestionToFAQCmd struct {
 }
 
-func NewAddQuestionToFAQCmd() Cmd {
+func NewAddQuestionToFAQCmd() Command {
 	return &addQuestionToFAQCmd{}
 }
 
@@ -102,7 +102,7 @@ func (c *addQuestionToFAQCmd) Execute(ctx context.Context, job *Job) error {
 type sendMessageStringCmd struct {
 }
 
-func NewSendMessageCmd() Cmd {
+func NewSendMessageCmd() Command {
 	return &sendMessageStringCmd{}
 }
 

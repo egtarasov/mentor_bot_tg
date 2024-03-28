@@ -11,7 +11,7 @@ import (
 type askQuestionCmd struct {
 }
 
-func NewAskQuestionCmd() Cmd {
+func NewAskQuestionCmd() Command {
 	return &askQuestionCmd{}
 }
 
@@ -43,7 +43,7 @@ func (c *askQuestionCmd) Execute(ctx context.Context, job *Job) error {
 type calendarCmd struct {
 }
 
-func NewCalendarCmd() Cmd {
+func NewCalendarCmd() Command {
 	return &calendarCmd{}
 }
 

@@ -15,11 +15,11 @@ type getMaterialCmd struct {
 type subDirCmd struct {
 }
 
-func NewGetDataCmd() Cmd {
+func NewGetDataCmd() Command {
 	return &getMaterialCmd{}
 }
 
-func NewSubDirCmd() Cmd {
+func NewSubDirCmd() Command {
 	return &subDirCmd{}
 }
 

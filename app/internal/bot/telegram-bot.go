@@ -161,9 +161,9 @@ func (b *telegramBot) getMediaGroup(ctx context.Context, update *models.Update, 
 func defaultUpdate(update *tgbotapi.Update) *models.Update {
 	// Create an update.
 	u := &models.Update{
-		UpdateUserId: update.Message.From.ID,
-		ChatId:       update.Message.Chat.ID,
-		Message:      update.Message.Text,
+		Id:      update.Message.From.ID,
+		ChatId:  update.Message.Chat.ID,
+		Message: update.Message.Text,
 	}
 
 	// Process a Photo.

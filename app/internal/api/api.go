@@ -24,9 +24,9 @@ type app struct {
 	users updates.Map
 
 	// Commands available for a bot.
-	getCmd     commands.Cmd
-	subDirCmd  commands.Cmd
-	complexCmd map[string]commands.Cmd
+	getCmd     commands.Command
+	subDirCmd  commands.Command
+	complexCmd map[string]commands.Command
 }
 
 func newApp() (*app, error) {
@@ -60,10 +60,10 @@ func addCommands(app *app) {
 
 	// All complex commands must be registered there. Note, that the name in database and name in map must be the same,
 	// otherwise the command will node function.
-	app.complexCmd = make(map[string]commands.Cmd)
+	app.complexCmd = make(map[string]commands.Command)
 	complexCmd := []struct {
 		key string
-		cmd commands.Cmd
+		cmd commands.Command
 	}{
 		{key: "Показать чек-лист", cmd: commands.NewShowTodoListCmd()},
 		{key: "Отметить задачу в чек-листе", cmd: commands.NewCheckTodoCmd()},
@@ -181,7 +181,7 @@ func (a *app) processQueue(queue updates.Queue, user *models.User) {
 func (a *app) processJob(job *commands.Job) {
 	defer a.wgUpdates.Done()
 
-	var cmd commands.Cmd
+	var cmd commands.Command
 
 	switch models.IntToAction(job.Command.ActionId) {
 	case models.GetDataCmd:
@@ -211,7 +211,7 @@ func (a *app) processJob(job *commands.Job) {
 
 // authenticate gets a user for a given update.
 func (a *app) authenticate(update *models.Update) *models.User {
-	user, err := container.Container.UserRepo().GetUserByTag(a.ctx, update.UpdateUserId)
+	user, err := container.Container.UserRepo().GetUserByTag(a.ctx, update.Id)
 	if errors.Is(err, repository.ErrNoUser) {
 		return nil
 	}

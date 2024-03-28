@@ -25,7 +25,8 @@ type calendar struct {
 
 func NewCalendar(path string, timeout time.Duration) Calendar {
 	return &calendar{
-		url: path,
+		url:     path,
+		timeout: timeout,
 	}
 }
 

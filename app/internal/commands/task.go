@@ -11,7 +11,7 @@ import (
 type showTodoListCmd struct {
 }
 
-func NewShowTodoListCmd() Cmd {
+func NewShowTodoListCmd() Command {
 	return &showTodoListCmd{}
 }
 
@@ -37,7 +37,7 @@ func (c *showTodoListCmd) Execute(ctx context.Context, job *Job) error {
 type checkTodoCmd struct {
 }
 
-func NewCheckTodoCmd() Cmd {
+func NewCheckTodoCmd() Command {
 	return &checkTodoCmd{}
 }
 
@@ -76,7 +76,7 @@ func (c *checkTodoCmd) Execute(ctx context.Context, job *Job) error {
 type showGoalsCmd struct {
 }
 
-func NewShowGoalCmd() Cmd {
+func NewShowGoalCmd() Command {
 	return &showGoalsCmd{}
 }
 
@@ -92,7 +92,7 @@ func (c *showGoalsCmd) Execute(ctx context.Context, job *Job) error {
 type showTasksCmd struct {
 }
 
-func NewShowTasksCmd() Cmd {
+func NewShowTasksCmd() Command {
 	return &showTasksCmd{}
 }
 
@@ -118,7 +118,7 @@ func uncompletedTask(ctx context.Context, tasks []models.Task) []models.Task {
 type occupationMaterialCmd struct {
 }
 
-func NewOccupationMaterialCmd() Cmd {
+func NewOccupationMaterialCmd() Command {
 	return &occupationMaterialCmd{}
 }
 
@@ -134,7 +134,7 @@ func (c *occupationMaterialCmd) Execute(ctx context.Context, job *Job) error {
 type checkTaskCmd struct {
 }
 
-func NewCheckTask() Cmd {
+func NewCheckTask() Command {
 	return &checkTaskCmd{}
 }
 

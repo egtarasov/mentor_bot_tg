@@ -11,3 +11,33 @@ P.S В HR отделе тоже работают люди со своими за
 
 About:
 Твой лучший помощник во время адаптации
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+getFileId(path string) (string, bool)
+storeFileId(path string, fileId string)
+newPhoto(message *models.Message, markUp any) ([]tgbotapi.Chattable, bool)
+parseText(text string, chatId int64, chattables []tgbotapi.Chattable) []tgbotapi.Chattable
+newMessage(message *models.Message, markUp any) []tgbotapi.Chattable
+newMediaGroup(message *models.Message) []tgbotapi.Chattable
+newChattable(message *models.Message, markup any) ([]tgbotapi.Chattable, bool)
+Start(ctx context.Context) <-chan *models.Update
+getMediaGroup(ctx context.Context, update *models.Update, groupId string) *tgbotapi.Update
+telegramToUpdate(ctx context.Context, update *tgbotapi.Update)
+sendUpdate(update *models.Update)
+SendMessage(ctx context.Context, message *models.Message) error
+SendButtons(ctx context.Context, buttons *models.Buttons) error
+send(message *models.Message, markup any) error
