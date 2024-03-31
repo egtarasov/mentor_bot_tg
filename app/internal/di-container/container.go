@@ -60,6 +60,7 @@ func (c *DiContainer) runMigrations() {
 	if err := goose.SetDialect("postgres"); err != nil {
 		panic(err)
 	}
+	time.Sleep(time.Second * 5)
 	if err := goose.Up(db, "migrations"); err != nil {
 		panic(err)
 	}

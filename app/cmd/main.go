@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"telegrambot_new_emploee/internal/api"
 )
 
@@ -9,6 +10,6 @@ func main() {
 	//if err != nil {
 	//	log.Fatal(err)
 	//}
-	//
+	log.Printf("Now:")
 	api.Run()
 }

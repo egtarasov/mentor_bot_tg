@@ -20,6 +20,8 @@ services:
       - "80:80"
     expose:
       - "80"
+    depends_on:
+      - database
     links:
       - database
       - calendar_service

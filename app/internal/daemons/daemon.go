@@ -23,6 +23,7 @@ func startDaemon(ctx context.Context, duration time.Duration, daemon daemon) {
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
+			log.Println("Trigger the daemon")
 			err := daemon.start(ctx)
 			if err != nil {
 				// TODO Log error

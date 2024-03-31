@@ -52,12 +52,14 @@ func StartNotificationDaemon(ctx context.Context) {
 		log.Fatal(err)
 	}
 	for _, notification := range notifications {
-		startNotificationDaemon(
-			ctx,
-			notification.NotificationTime,
-			notification.DayOfWeek,
-			notification.RepeatTime,
-			newNotificationDaemon(notification.Message, notification.PhotoPath))
+		go func(notification *models.Notification) {
+			startNotificationDaemon(
+				ctx,
+				notification.NotificationTime,
+				notification.DayOfWeek,
+				notification.RepeatTime,
+				newNotificationDaemon(notification.Message, notification.PhotoPath))
+		}(&notification)
 	}
 }
 
@@ -68,6 +70,7 @@ func startNotificationDaemon(
 	repeat time.Duration,
 	daemon daemon,
 ) {
+	log.Printf("Create a notification:\n\t[hour:%v]\n\t[dayOfWeek:%v]\n\t[repeat:%v]", hour, dayOfWeek, repeat)
 	waitUntilTheCorrectTime(hour, dayOfWeek)
 	startDaemon(ctx, repeat, daemon)
 }
