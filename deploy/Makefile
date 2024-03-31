@@ -15,3 +15,14 @@ upload_tasks:
 deploy:
 	docker-compose up -d
 
+
+# Сервр
+#curl -X GET -v "http://localhost:80/commands"
+#
+#curl -X PUT -v "http://localhost:80/commands" -d '{"command_id" : 12, "message" : "Частые вопросы и ответы"}'
+#
+#curl -X GET -v "http://localhost:80/questions"
+#
+#curl -X POST -v "http://localhost:80/questions" -d '{"question_id" : 4, "answer" : "Все ультра биг"}'
+#
+#curl -X POST -v -F photo=@./images/start.jpg -F message="hello my friend"  "http://localhost:80/send"

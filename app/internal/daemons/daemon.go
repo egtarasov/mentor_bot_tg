@@ -14,19 +14,18 @@ func startDaemon(ctx context.Context, duration time.Duration, daemon daemon) {
 	log.Println("Start the daemon!")
 	err := daemon.start(ctx)
 	if err != nil {
-		// TODO Log error
+		log.Println(err)
 	}
 	ticker := time.NewTicker(duration)
 	for {
 		select {
-		// TODO graceful shutdown.
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
 			log.Println("Trigger the daemon")
 			err := daemon.start(ctx)
 			if err != nil {
-				// TODO Log error
+				log.Println(err)
 			}
 		}
 	}
