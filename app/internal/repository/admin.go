@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"telegrambot_new_emploee/internal/models"
 )
 
@@ -10,6 +11,8 @@ type UpdateFaq struct {
 	Question    string
 	Answer      string
 }
+
+var ErrNoSection = fmt.Errorf("no section faq")
 
 type AdminRepository interface {
 	GetFAQSections(ctx context.Context) ([]string, error)

@@ -24,5 +24,5 @@ func questionView(question models.Question) string {
 }
 
 func ChooseSectionView(sections []string, chatId int64) *models.Buttons {
-	return convert.ToButtons(sections, convert.DefaultToButtonsCfg("Выбери секцию FAQ", chatId))
+	return convert.ToButtons(sections, convert.DefaultToButtonsCfg("Выбери секцию FAQ в меню ниже или введи 'отмена'", chatId))
 }

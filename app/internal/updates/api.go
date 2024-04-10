@@ -6,7 +6,6 @@ import (
 )
 
 type Queue interface {
-	// TODO think about other solution.
 	sync.Locker
 	// Size returns the size of the queue. This method is not concurrent safe, so make sure to use Lock before calling.
 	Size() int

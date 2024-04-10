@@ -25,12 +25,11 @@ func StartServer() {
 
 	//mux.HandleFunc("GET /questions", s.GetRequestsHandler)
 	//mux.HandleFunc("POST /questions", s.AnswerQuestion)
+	//mux.HandleFunc("POST /send", s.SendMessage)
 
 	mux.HandleFunc("GET /commands", s.GetCommands)
 	mux.HandleFunc("PUT /commands", s.ChangeCommand)
 	mux.HandleFunc("POST /commands", s.AddCommand)
-
-	//mux.HandleFunc("POST /send", s.SendMessage)
 	mux.HandleFunc("POST /add/tasks", s.AddEmployee)
 
 	log.Println("Server listen on port", config.Cfg.Admin.Port)

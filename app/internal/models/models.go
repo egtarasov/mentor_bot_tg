@@ -74,11 +74,18 @@ type Task struct {
 }
 
 type Message struct {
-	PhotoPath  *string
+	// Photo can be represented by one of the following thing: PhotoPath, PhotoBytes, PhotoIds.
+
+	// PhotoPath is a path to a photo to be sent.
+	PhotoPath *string
+	// PhotoBytes is a byte array photo representation.
 	PhotoBytes []byte
-	PhotoIds   []string
-	Message    string
-	ChatId     int64
+	// PhotoIds is an array of already downloaded photos to Telegram servers.
+	PhotoIds []string
+
+	// Message is the text to be shown to user.
+	Message string
+	ChatId  int64
 }
 
 func (m *Message) FilePath() string {
@@ -88,7 +95,9 @@ func (m *Message) FilePath() string {
 type Button string
 
 type Buttons struct {
+	// Message is the message to be sent.
 	Message *Message
+	// Buttons is a matrix of new keyboard layout.
 	Buttons [][]Button
 }
 

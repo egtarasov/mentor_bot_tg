@@ -423,10 +423,11 @@ func (q *questionsPostgres) GetQuestionById(ctx context.Context, questionId int6
 type adminPostgres struct {
 	pool        *pgxpool.Pool
 	commandRepo repository.CommandRepo
+	FAQ         string
 }
 
 func NewAdminPostgres(pool *pgxpool.Pool, repo repository.CommandRepo) repository.AdminRepository {
-	return &adminPostgres{pool: pool, commandRepo: repo}
+	return &adminPostgres{pool: pool, commandRepo: repo, FAQ: "FAQ"}
 }
 
 func (f *adminPostgres) GetFAQSections(ctx context.Context) ([]string, error) {
@@ -444,13 +445,20 @@ func (f *adminPostgres) GetFAQSections(ctx context.Context) ([]string, error) {
 func (f *adminPostgres) UpdateFAQ(ctx context.Context, faq *repository.UpdateFaq) error {
 	command, err := f.commandRepo.GetCommand(ctx, faq.SectionName)
 	if err != nil {
-		return err
+		return repository.ErrNoSection
 	}
 	tx, err := f.pool.Begin(ctx)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback(ctx)
+
+	var parent repoModels.Command
+	err = pgxscan.Get(ctx, tx, &parent, `select id, name, action_id, is_admin, parent_id 
+	from commands where id = (select parent_id from commands where id = $1)`, command.Id)
+	if err != nil || parent.Name != f.FAQ {
+		return repository.ErrNoSection
+	}
 
 	var message string
 	err = pgxscan.Get(ctx, tx, &message, `select message from materials where command_id = $1`, command.Id)

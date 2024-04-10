@@ -13,7 +13,7 @@ upload_tasks:
 
 
 deploy:
-	docker-compose up -d
+	docker-compose up -d --build
 
 
 # Сервр

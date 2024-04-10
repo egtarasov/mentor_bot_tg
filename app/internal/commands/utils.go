@@ -37,7 +37,7 @@ func getStringWithMessage(ctx context.Context, job *Job, message string) (string
 func getNumber(ctx context.Context, job *Job, limit int) (number int, err error) {
 	for {
 		update := job.Queue.WaitForUpdate()
-		if strings.ToLower(update.Message) == CancelMessage {
+		if isCanceled(update.Message) {
 			return 0, ErrCanceled
 		}
 		number, err = strconv.Atoi(update.Message)
@@ -70,9 +70,13 @@ func getNumber(ctx context.Context, job *Job, limit int) (number int, err error)
 	return number, err
 }
 
+func isCanceled(msg string) bool {
+	return strings.ToLower(msg) == CancelMessage
+}
+
 func getString(ctx context.Context, job *Job) (string, error) {
 	update := job.Queue.WaitForUpdate()
-	if update == nil {
+	if update == nil || isCanceled(update.Message) {
 		return "", ErrCanceled
 	}
 

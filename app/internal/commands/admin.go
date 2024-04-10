@@ -2,6 +2,7 @@ package commands
 
 import (
 	"context"
+	"errors"
 	"log"
 	container "telegrambot_new_emploee/internal/di-container"
 	"telegrambot_new_emploee/internal/models"
@@ -78,11 +79,11 @@ func (c *addQuestionToFAQCmd) Execute(ctx context.Context, job *Job) error {
 	if err != nil {
 		return err
 	}
-	question, err := getStringWithMessage(ctx, job, "Введи вопрос")
+	question, err := getStringWithMessage(ctx, job, "Введи вопрос или 'отмена'")
 	if err != nil {
 		return err
 	}
-	answer, err := getStringWithMessage(ctx, job, "Введи ответ")
+	answer, err := getStringWithMessage(ctx, job, "Введи ответ или 'отмена'")
 	if err != nil {
 		return err
 	}
@@ -92,6 +93,9 @@ func (c *addQuestionToFAQCmd) Execute(ctx context.Context, job *Job) error {
 		Question:    question,
 		Answer:      answer,
 	})
+	if errors.Is(err, repository.ErrNoSection) {
+		return container.Container.Bot().SendMessage(ctx, models.NewMessage("Ты ввел не секцию FAQ", job.GetChatId()))
+	}
 	if err != nil {
 		return err
 	}

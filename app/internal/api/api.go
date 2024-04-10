@@ -146,7 +146,7 @@ func (a *app) processUpdate(update *models.Update) {
 	}
 
 	a.changeUpdate(update)
-
+	log.Printf("Recived update [%s] from [%d], photoIds:[%s]", update.Message, update.ChatId, update.PhotoIds)
 	// Get or create a queue for a user and put update into it.
 	queue, ok := a.users.GetOrCreate(user.Id)
 	queue.AddUpdate(update)
